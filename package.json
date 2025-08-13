@@ -31,6 +31,7 @@
 	"dependencies": {
 		"@tauri-apps/plugin-fs": "^2.4.1",
 		"@types/lodash": "^4.17.20",
-		"lodash": "^4.17.21"
+		"lodash": "^4.17.21",
+		"svelte-5-french-toast": "^2.0.6"
 	}
 }

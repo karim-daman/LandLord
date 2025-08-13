@@ -1,12 +1,10 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
-
-	let { children } = $props();
+	import { Toaster } from 'svelte-5-french-toast';
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
+<Toaster />
 
-{@render children?.()}
+<main class="mx-auto max-w-7xl rounded-sm px-4 py-6">
+	<slot />
+</main>

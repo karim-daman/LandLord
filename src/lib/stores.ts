@@ -1,6 +1,4 @@
 import { writable } from 'svelte/store';
-// import { debounce } from 'lodash';
-
 import pkg from 'lodash';
 const { debounce } = pkg;
 
