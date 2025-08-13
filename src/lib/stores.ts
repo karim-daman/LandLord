@@ -7,26 +7,6 @@ import { readTextFile, writeTextFile, BaseDirectory, exists, mkdir } from '@taur
 export const clients = writable<any[]>([]);
 export const properties = writable<any[]>([]);
 
-async function ensureDataFolder() {
-	const dataFolderExist = await exists('LandLord', { baseDir: BaseDirectory.Desktop });
-
-	if (!dataFolderExist) {
-		console.log('Data folder does not exist, creating one..');
-		await mkdir('LandLord', { baseDir: BaseDirectory.Desktop });
-	}
-
-	const files = ['Clients.txt', 'Properties.txt'];
-
-	await Promise.all(
-		files.map(async (file) => {
-			const filePath = `LandLord/${file}`;
-			if (!(await exists(filePath, { baseDir: BaseDirectory.Desktop }))) {
-				await writeTextFile(filePath, '[]', { baseDir: BaseDirectory.Desktop });
-			}
-		})
-	);
-}
-
 async function saveToFile(data: any, filename: string) {
 	if (!data) return;
 	try {
@@ -67,17 +47,44 @@ async function initializeStore<T>(store: any, filename: string, setter: (data: T
 	}
 }
 
-let initialized = false;
+// let initialized = false;
 
-export async function initializeAllStores() {
-	if (initialized) return;
+export async function initializeAllStores(): Promise<{ success: boolean; message: string }> {
+	// if (initialized) return { success: true, message: 'Stores already initialized.' };
+
 	try {
 		await ensureDataFolder(); // Only call once
 		await Promise.all([initializeClientsStore(), initializePropertiesStore()]);
+
+		// initialized = true; // Only set to true if no errors occurred
+		return { success: true, message: 'All stores initialized successfully.' };
 	} catch (error) {
 		console.error('Error initializing stores:', error);
+		return {
+			success: false,
+			message: `Failed to initialize stores: ${error instanceof Error ? error.message : String(error)}`
+		};
 	}
-	initialized = true;
+}
+
+async function ensureDataFolder() {
+	const dataFolderExist = await exists('LandLord', { baseDir: BaseDirectory.Desktop });
+
+	if (!dataFolderExist) {
+		console.log('Data folder does not exist, creating one..');
+		await mkdir('LandLord', { baseDir: BaseDirectory.Desktop });
+	}
+
+	const files = ['Clients.txt', 'Properties.txt'];
+
+	await Promise.all(
+		files.map(async (file) => {
+			const filePath = `LandLord/${file}`;
+			if (!(await exists(filePath, { baseDir: BaseDirectory.Desktop }))) {
+				await writeTextFile(filePath, '[]', { baseDir: BaseDirectory.Desktop });
+			}
+		})
+	);
 }
 
 export async function initializeClientsStore() {

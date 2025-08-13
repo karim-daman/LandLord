@@ -4,11 +4,20 @@
 	import { onMount } from 'svelte';
 
 	onMount(async () => {
-		initializeAllStores();
-
-		toast.success('Welcome Back!', {
-			position: 'bottom-right'
-		});
+		toast.promise(
+			initializeAllStores().then((res) => {
+				if (!res.success) throw new Error(res.message); // Convert to rejection
+				return res.message; // Success case
+			}),
+			{
+				loading: 'Initializing stores...',
+				success: (message) => message,
+				error: (err) => err.message
+			},
+			{
+				position: 'bottom-right'
+			}
+		);
 	});
 </script>
 
