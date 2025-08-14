@@ -5,7 +5,6 @@
 	export let maxWidth = 'max-w-2xl';
 
 	function handleKeyDown(e: any) {
-		// Close on Enter or Space (standard keyboard interaction)
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
 			onClose();
@@ -25,7 +24,6 @@
 				aria-label="Close modal"
 			></div>
 
-			<!-- <div class="bg-opacity-50 fixed inset-0 bg-black transition-opacity" on:click={onClose}></div> -->
 			<div
 				class={`relative rounded-lg bg-white shadow-xl ${maxWidth} max-h-[90vh] w-full overflow-hidden`}
 			>

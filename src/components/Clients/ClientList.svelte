@@ -76,8 +76,6 @@
 		</button>
 	</div>
 
-	<!-- <SearchFilter bind:searchTerm placeholder="Search clients by name, email, or phone..." /> -->
-
 	<SearchFilter
 		bind:searchTerm
 		placeholder="Search clients by name, email, or phone..."

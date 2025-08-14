@@ -25,6 +25,9 @@
 				return endDate <= thirtyDaysFromNow && lease.status === 'active';
 			})
 		: [];
+	$: expiredLeases = Array.isArray(leases)
+		? leases.filter((lease) => new Date(lease.endDate).getTime() < Date.now())
+		: [];
 
 	$: stats = [
 		{
@@ -103,7 +106,7 @@
 				<div class="flex items-center justify-between">
 					<span class="text-sm text-gray-600">Expired Leases</span>
 					<span class="text-sm font-medium text-red-600">
-						{Array.isArray(leases) ? leases.filter((l) => l.status === 'expired').length : 0}
+						{expiredLeases.length}
 					</span>
 				</div>
 			</div>
@@ -162,7 +165,6 @@
 		</div>
 		<div class="space-y-3">
 			{#each recentActivity as item, index (index)}
-				<!-- We can't use #const, so we use the logic directly in the template -->
 				<div class="flex items-center space-x-3 rounded-lg bg-gray-50 p-3">
 					<div
 						class={`rounded-full p-2 ${

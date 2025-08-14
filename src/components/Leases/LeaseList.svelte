@@ -4,7 +4,7 @@
 	import LeaseForm from './LeaseForm.svelte';
 	import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
 	import type { LeaseAgreement, Client, Property } from '../../types';
-	import { calendar, calendar2, edit, eye, home2, plus, trash, user } from '../Icons/icons';
+	import { calendarClock, calendar2, edit, eye, home2, plus, trash, user } from '../Icons/icons';
 
 	export let leases: LeaseAgreement[];
 	export let clients: Client[];
@@ -37,8 +37,6 @@
 
 	// Added a check to ensure `leases` is an array before calling `.filter()`
 	$: {
-		console.log('Type of leases:', typeof leases);
-		console.log('Is leases an Array?', Array.isArray(leases));
 		filteredLeases = (Array.isArray(leases) ? leases : []).filter((lease) => {
 			const client = clients.find((c) => c.id === lease.clientId);
 			const property = properties.find((p) => p.id === lease.propertyId);
@@ -56,6 +54,91 @@
 	}
 
 	let filteredLeases: LeaseAgreement[];
+
+	// New function to calculate lease progress
+	function calculateLeaseProgress(startDate: string, endDate: string): number {
+		const start = new Date(startDate).getTime();
+		const end = new Date(endDate).getTime();
+		const now = Date.now();
+
+		// Handle cases where start or end dates are invalid or identical
+		if (isNaN(start) || isNaN(end) || start >= end) {
+			return 0;
+		}
+
+		// If the lease hasn't started, progress is 0
+		if (now < start) return 0;
+
+		// If the lease is over, progress is 100%
+		if (now > end) return 100;
+
+		const totalDuration = end - start;
+		const elapsedDuration = now - start;
+		const progress = (elapsedDuration / totalDuration) * 100;
+
+		return Math.round(progress);
+	}
+
+	/**
+	 * Calculates the duration between two dates and returns a formatted string.
+	 * @param startDate The start date of the lease as a string.
+	 * @param endDate The end date of the lease as a string.
+	 * @returns A string formatted as "years : xx , months : xx , days: xx".
+	 */
+	function calculateLeaseDuration(startDate: string, endDate: string): string {
+		const start = new Date(startDate);
+		const end = new Date(endDate);
+
+		let years = end.getFullYear() - start.getFullYear();
+		let months = end.getMonth() - start.getMonth();
+		let days = end.getDate() - start.getDate();
+
+		// If days are negative, borrow a month
+		if (days < 0) {
+			months--;
+			const lastMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+			days += lastMonth.getDate();
+		}
+
+		// If months are negative, borrow a year
+		if (months < 0) {
+			years--;
+			months += 12;
+		}
+
+		return `years : ${years} , months : ${months} , days: ${days}`;
+	}
+
+	/**
+	 * Checks if a lease is expiring within the next 30 days.
+	 * This is a more reliable check that avoids timezone issues.
+	 * @param endDate The lease's end date as a string.
+	 * @returns true if the lease is active and ends within 30 days, false otherwise.
+	 */
+	function isExpiringSoon(endDate: string): boolean {
+		const now = new Date();
+		const end = new Date(endDate);
+		const oneDayInMs = 24 * 60 * 60 * 1000;
+
+		// The lease is only "expiring soon" if it's still active (end is in the future)
+		// and the time remaining is less than or equal to 30 days.
+		const timeDifference = end.getTime() - now.getTime();
+		const daysDifference = Math.ceil(timeDifference / oneDayInMs);
+
+		return daysDifference <= 30 && daysDifference > 0;
+	}
+
+	/**
+	 * Dynamically determines the display status of a lease.
+	 * @param lease The lease object.
+	 * @returns The appropriate status string ('expired', 'expiring-soon', or the original status).
+	 */
+	function getDisplayStatus(lease: LeaseAgreement): string {
+		const now = new Date();
+		const endDate = new Date(lease.endDate);
+		if (endDate.getTime() < now.getTime()) return 'expired';
+		return lease.status;
+	}
 
 	function handleCreate() {
 		selectedLease = undefined;
@@ -127,11 +210,13 @@
 					<div class="mb-4 flex items-start justify-between">
 						<div class="flex items-center space-x-2">
 							<span
-								class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(lease.status)}`}
+								class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
+									getDisplayStatus(lease)
+								)}`}
 							>
-								{lease.status.charAt(0).toUpperCase() + lease.status.slice(1)}
+								{getDisplayStatus(lease).charAt(0).toUpperCase() + getDisplayStatus(lease).slice(1)}
 							</span>
-							{#if new Date(lease.endDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) && lease.status === 'active'}
+							{#if isExpiringSoon(lease.endDate) && lease.status === 'active'}
 								<span
 									class="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800"
 								>
@@ -169,7 +254,9 @@
 							{@html user}
 							<span class="font-medium">
 								{clients.find((c) => c.id === lease.clientId)
-									? `${clients.find((c) => c.id === lease.clientId)?.firstName} ${clients.find((c) => c.id === lease.clientId)?.lastName}`
+									? `${clients.find((c) => c.id === lease.clientId)?.firstName} ${
+											clients.find((c) => c.id === lease.clientId)?.lastName
+										}`
 									: 'Unknown Client'}
 							</span>
 						</div>
@@ -188,6 +275,30 @@
 							<span>
 								{formatDate(lease.startDate)} - {formatDate(lease.endDate)}
 							</span>
+						</div>
+
+						<div class="flex items-center text-sm text-gray-600">
+							{@html calendarClock}
+							<span class:text-red-600={getDisplayStatus(lease) === 'expired'}>
+								{calculateLeaseDuration(lease.startDate, lease.endDate)}
+							</span>
+						</div>
+
+						<div class="w-full border-t border-gray-100 p-1 pt-3">
+							<div class="mb-1 flex items-center justify-between">
+								<p class="text-sm text-gray-600">Lease Progress</p>
+								<span class="text-sm font-semibold text-gray-900"
+									>{calculateLeaseProgress(lease.startDate, lease.endDate)}%</span
+								>
+							</div>
+							<div class="h-2 w-full rounded-full bg-gray-200">
+								<div
+									class="h-full rounded-full {getDisplayStatus(lease) === 'expired'
+										? 'bg-red-600'
+										: 'bg-blue-600'} transition-all duration-300 ease-in-out"
+									style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
+								></div>
+							</div>
 						</div>
 
 						<div class="flex items-center justify-between border-t border-gray-100 pt-3">
@@ -300,9 +411,12 @@
 					<div>
 						<label for="Status" class="mb-1 block text-sm font-medium text-gray-700">Status</label>
 						<span
-							class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(selectedLease.status)}`}
+							class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
+								getDisplayStatus(selectedLease)
+							)}`}
 						>
-							{selectedLease.status.charAt(0).toUpperCase() + selectedLease.status.slice(1)}
+							{getDisplayStatus(selectedLease).charAt(0).toUpperCase() +
+								getDisplayStatus(selectedLease).slice(1)}
 						</span>
 					</div>
 					<div>

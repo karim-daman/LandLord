@@ -11,7 +11,6 @@
 
 <div class="mb-6 flex flex-col gap-4 sm:flex-row">
 	<div class="relative flex-1">
-		<!-- Search Icon -->
 		{@html search}
 		<input
 			type="text"
@@ -24,7 +23,6 @@
 
 	{#if filterOptions && onFilterChange}
 		<div class="relative">
-			<!-- Filter Icon -->
 			{@html filter}
 			<select
 				bind:value={filterValue}
