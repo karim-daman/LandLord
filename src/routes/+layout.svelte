@@ -5,6 +5,6 @@
 
 <Toaster />
 
-<main class="mx-auto max-w-7xl rounded-sm px-4 py-6">
+<main class="mx-auto max-w-7xl rounded-sm">
 	<slot />
 </main>
