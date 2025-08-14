@@ -78,8 +78,9 @@
 <form on:submit={handleSubmit} class="space-y-6 p-6">
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> First Name * </label>
+			<label for="firstName" class="mb-2 block text-sm font-medium text-gray-700">
+				First Name *
+			</label>
 			<input
 				type="text"
 				bind:value={formData.firstName}
@@ -177,8 +178,9 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Emergency Phone </label>
+			<label for="emergencyPhone" class="mb-2 block text-sm font-medium text-gray-700">
+				Emergency Phone
+			</label>
 			<input
 				type="tel"
 				bind:value={formData.emergencyPhone}

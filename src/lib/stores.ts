@@ -3,9 +3,11 @@ import pkg from 'lodash';
 const { debounce } = pkg;
 
 import { readTextFile, writeTextFile, BaseDirectory, exists, mkdir } from '@tauri-apps/plugin-fs';
+import type { Client, Property, LeaseAgreement } from '../types';
 
-export const clients = writable<any[]>([]);
-export const properties = writable<any[]>([]);
+export const clients = writable<Client[]>([]);
+export const properties = writable<Property[]>([]);
+export const leaseAgreement = writable<LeaseAgreement[]>([]);
 
 async function saveToFile(data: any, filename: string) {
 	if (!data) return;
@@ -47,14 +49,14 @@ async function initializeStore<T>(store: any, filename: string, setter: (data: T
 	}
 }
 
-// let initialized = false;
-
 export async function initializeAllStores(): Promise<{ success: boolean; message: string }> {
-	// if (initialized) return { success: true, message: 'Stores already initialized.' };
-
 	try {
 		await ensureDataFolder(); // Only call once
-		await Promise.all([initializeClientsStore(), initializePropertiesStore()]);
+		await Promise.all([
+			initializeClientsStore(),
+			initializePropertiesStore(),
+			initializeLeaseAgreementStore()
+		]);
 
 		// initialized = true; // Only set to true if no errors occurred
 		return { success: true, message: 'All stores initialized successfully.' };
@@ -75,7 +77,7 @@ async function ensureDataFolder() {
 		await mkdir('LandLord', { baseDir: BaseDirectory.Desktop });
 	}
 
-	const files = ['Clients.txt', 'Properties.txt'];
+	const files = ['Clients.txt', 'Properties.txt', 'LeaseAgreement.txt'];
 
 	await Promise.all(
 		files.map(async (file) => {
@@ -88,9 +90,15 @@ async function ensureDataFolder() {
 }
 
 export async function initializeClientsStore() {
-	await initializeStore(clients, 'clients', (data) => clients.set(data));
+	await initializeStore(clients, 'clients', (data: Client[]) => clients.set(data));
 }
 
 export async function initializePropertiesStore() {
-	await initializeStore(properties, 'properties', (data) => properties.set(data));
+	await initializeStore(properties, 'properties', (data: Property[]) => properties.set(data));
+}
+
+export async function initializeLeaseAgreementStore() {
+	await initializeStore(leaseAgreement, 'leaseAgreement', (data: LeaseAgreement[]) =>
+		leaseAgreement.set(data)
+	);
 }

@@ -118,8 +118,7 @@
 <form on:submit={handleSubmit} class="space-y-6 p-6">
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Client * </label>
+			<label for="clientId" class="mb-2 block text-sm font-medium text-gray-700"> Client * </label>
 			<select
 				bind:value={formData.clientId}
 				on:change={handleChange('clientId')}
@@ -139,8 +138,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Property * </label>
+			<label for="Property" class="mb-2 block text-sm font-medium text-gray-700">
+				Property *
+			</label>
 			<select
 				bind:value={formData.propertyId}
 				on:change={handleChange('propertyId')}
@@ -159,8 +159,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Start Date * </label>
+			<label for="startDate" class="mb-2 block text-sm font-medium text-gray-700">
+				Start Date *
+			</label>
 			<input
 				type="date"
 				bind:value={formData.startDate}
@@ -173,8 +174,7 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> End Date * </label>
+			<label for="endDate" class="mb-2 block text-sm font-medium text-gray-700"> End Date * </label>
 			<input
 				type="date"
 				bind:value={formData.endDate}
@@ -187,8 +187,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Monthly Rent * </label>
+			<label for="monthlyRent" class="mb-2 block text-sm font-medium text-gray-700">
+				Monthly Rent *
+			</label>
 			<input
 				type="number"
 				min="0"
@@ -203,8 +204,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Security Deposit * </label>
+			<label for="securityDeposit" class="mb-2 block text-sm font-medium text-gray-700">
+				Security Deposit *
+			</label>
 			<input
 				type="number"
 				min="0"
@@ -221,8 +223,7 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Status * </label>
+			<label for="status" class="mb-2 block text-sm font-medium text-gray-700"> Status * </label>
 			<select
 				bind:value={formData.status}
 				on:change={handleChange('status')}
@@ -237,8 +238,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Signed Date </label>
+			<label for="signedDate" class="mb-2 block text-sm font-medium text-gray-700">
+				Signed Date
+			</label>
 			<input
 				type="date"
 				bind:value={formData.signedDate}
@@ -248,29 +250,29 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Lease Terms </label>
-			<!-- svelte-ignore element_invalid_self_closing_tag -->
+			<label for="terms" class="mb-2 block text-sm font-medium text-gray-700"> Lease Terms </label>
 			<textarea
 				bind:value={formData.terms}
 				on:change={handleChange('terms')}
 				rows={4}
 				placeholder="Standard lease terms and conditions..."
 				class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-			/>
+			>
+			</textarea>
 		</div>
 
 		<div class="md:col-span-2">
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Special Conditions </label>
-			<!-- svelte-ignore element_invalid_self_closing_tag -->
+			<label for="specialConditions" class="mb-2 block text-sm font-medium text-gray-700">
+				Special Conditions
+			</label>
 			<textarea
 				bind:value={formData.specialConditions}
 				on:change={handleChange('specialConditions')}
 				rows={3}
 				placeholder="Any special conditions or requirements..."
 				class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-			/>
+			>
+			</textarea>
 		</div>
 	</div>
 

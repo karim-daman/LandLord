@@ -5,6 +5,8 @@
 	import { formatCurrency } from '../../utils/helpers';
 	import type { Property } from '../../types';
 
+	import { eye, edit, mappin, trash, home, dollarsign, plus } from '../Icons/icons';
+
 	export let properties: Property[];
 	export let onCreateProperty: (property: Property) => void;
 	export let onUpdateProperty: (property: Property) => void;
@@ -79,22 +81,29 @@
 <div>
 	<div class="mb-6 flex items-center justify-between">
 		<h2 class="text-2xl font-bold text-gray-900">Properties</h2>
+
 		<button
 			on:click={handleCreate}
-			class="flex items-center space-x-2 rounded-lg bg-teal-600 px-4 py-2 text-white transition-colors hover:bg-teal-700"
+			class="flex w-[150px] items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
 		>
-			<!-- Plus Icon -->
-			<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-			</svg>
+			{@html plus}
 			<span>Add Property</span>
 		</button>
 	</div>
 
-	<SearchFilter
+	<!-- <SearchFilter
 		bind:searchTerm
 		{filterOptions}
 		bind:filterValue
+		placeholder="Search properties by address, city, or state..."
+	/> -->
+
+	<SearchFilter
+		bind:searchTerm
+		onSearchChange={(term) => (searchTerm = term)}
+		{filterOptions}
+		bind:filterValue
+		onFilterChange={(value) => (filterValue = value)}
 		placeholder="Search properties by address, city, or state..."
 	/>
 
@@ -132,103 +141,38 @@
 								class="p-1 text-gray-400 transition-colors hover:text-teal-600"
 								title="View Details"
 							>
-								<!-- Eye Icon -->
-								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-									/>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-									/>
-								</svg>
+								{@html eye}
 							</button>
 							<button
 								on:click={() => handleEdit(property)}
 								class="p-1 text-gray-400 transition-colors hover:text-teal-600"
 								title="Edit Property"
 							>
-								<!-- Edit Icon -->
-								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-									/>
-								</svg>
+								{@html edit}
 							</button>
 							<button
 								on:click={() => handleDelete(property)}
 								class="p-1 text-gray-400 transition-colors hover:text-red-600"
 								title="Delete Property"
 							>
-								<!-- Trash Icon -->
-								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-									/>
-								</svg>
+								{@html trash}
 							</button>
 						</div>
 					</div>
 
 					<div class="space-y-3">
 						<div class="flex items-center text-sm text-gray-600">
-							<!-- MapPin Icon -->
-							<svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-								/>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-								/>
-							</svg>
+							{@html mappin}
 							<span class="truncate">{property.city}, {property.state} {property.zipCode}</span>
 						</div>
 						<div class="flex items-center text-sm text-gray-600">
-							<!-- Home Icon -->
-							<svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-								/>
-							</svg>
+							{@html home}
 							<span
 								>{property.bedrooms} bed, {property.bathrooms} bath • {property.squareFeet} sq ft</span
 							>
 						</div>
 						<div class="flex items-center text-sm font-medium text-gray-900">
-							<!-- DollarSign Icon -->
-							<svg
-								class="mr-2 h-4 w-4 text-green-600"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
+							{@html dollarsign}
 							<span>{formatCurrency(property.monthlyRent)}/month</span>
 						</div>
 					</div>
@@ -300,54 +244,73 @@
 			<div class="space-y-6 p-6">
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div class="md:col-span-2">
-						<label class="mb-1 block text-sm font-medium text-gray-700">Address</label>
+						<label for="address" class="mb-1 block text-sm font-medium text-gray-700">Address</label
+						>
 						<p class="text-sm text-gray-900">{selectedProperty.address}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">City</label>
+						<label for="city" class="mb-1 block text-sm font-medium text-gray-700">City</label>
 						<p class="text-sm text-gray-900">{selectedProperty.city}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">State</label>
+						<label for="state" class="mb-1 block text-sm font-medium text-gray-700">State</label>
 						<p class="text-sm text-gray-900">{selectedProperty.state}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">ZIP Code</label>
+						<label for="zipCode" class="mb-1 block text-sm font-medium text-gray-700"
+							>ZIP Code</label
+						>
 						<p class="text-sm text-gray-900">{selectedProperty.zipCode}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Property Type</label>
+						<label for="Type" class="mb-1 block text-sm font-medium text-gray-700"
+							>Property Type</label
+						>
 						<p class="text-sm text-gray-900 capitalize">{selectedProperty.propertyType}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Bedrooms</label>
+						<label for="Bedrooms" class="mb-1 block text-sm font-medium text-gray-700"
+							>Bedrooms</label
+						>
 						<p class="text-sm text-gray-900">{selectedProperty.bedrooms}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Bathrooms</label>
+						<label for="bathrooms" class="mb-1 block text-sm font-medium text-gray-700"
+							>Bathrooms</label
+						>
 						<p class="text-sm text-gray-900">{selectedProperty.bathrooms}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Square Feet</label>
+						<label for="area" class="mb-1 block text-sm font-medium text-gray-700"
+							>Square Feet</label
+						>
 						<p class="text-sm text-gray-900">{selectedProperty.squareFeet.toLocaleString()}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Monthly Rent</label>
+						<label for="rentAmount" class="mb-1 block text-sm font-medium text-gray-700"
+							>Monthly Rent</label
+						>
 						<p class="text-sm text-gray-900">{formatCurrency(selectedProperty.monthlyRent)}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Security Deposit</label>
+						<label for="deposit" class="mb-1 block text-sm font-medium text-gray-700"
+							>Security Deposit</label
+						>
 						<p class="text-sm text-gray-900">{formatCurrency(selectedProperty.deposit)}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Availability</label>
+						<label for="Availability" class="mb-1 block text-sm font-medium text-gray-700"
+							>Availability</label
+						>
 						<p class="text-sm text-gray-900">
 							{selectedProperty.isAvailable ? 'Available' : 'Occupied'}
 						</p>
 					</div>
 					{#if selectedProperty.amenities.length > 0}
 						<div class="md:col-span-2">
-							<label class="mb-2 block text-sm font-medium text-gray-700">Amenities</label>
+							<label for="Amenities" class="mb-2 block text-sm font-medium text-gray-700"
+								>Amenities</label
+							>
 							<div class="flex flex-wrap gap-2">
 								{#each selectedProperty.amenities as amenity (amenity)}
 									<span class="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
@@ -359,7 +322,9 @@
 					{/if}
 					{#if selectedProperty.description}
 						<div class="md:col-span-2">
-							<label class="mb-1 block text-sm font-medium text-gray-700">Description</label>
+							<label for="Description" class="mb-1 block text-sm font-medium text-gray-700"
+								>Description</label
+							>
 							<p class="text-sm text-gray-900">{selectedProperty.description}</p>
 						</div>
 					{/if}

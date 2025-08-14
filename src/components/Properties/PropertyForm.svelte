@@ -128,8 +128,7 @@
 <form on:submit={handleSubmit} class="space-y-6 p-6">
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div class="md:col-span-2">
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Address * </label>
+			<label for="address" class="mb-2 block text-sm font-medium text-gray-700"> Address * </label>
 			<input
 				type="text"
 				bind:value={formData.address}
@@ -142,8 +141,7 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> City * </label>
+			<label for="city" class="mb-2 block text-sm font-medium text-gray-700"> City * </label>
 			<input
 				type="text"
 				bind:value={formData.city}
@@ -156,8 +154,7 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> State * </label>
+			<label for="state" class="mb-2 block text-sm font-medium text-gray-700"> State * </label>
 			<input
 				type="text"
 				bind:value={formData.state}
@@ -170,8 +167,7 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> ZIP Code * </label>
+			<label for="zipCode" class="mb-2 block text-sm font-medium text-gray-700"> ZIP Code * </label>
 			<input
 				type="text"
 				bind:value={formData.zipCode}
@@ -184,8 +180,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Property Type * </label>
+			<label for="propertyType" class="mb-2 block text-sm font-medium text-gray-700">
+				Property Type *
+			</label>
 			<select
 				bind:value={formData.propertyType}
 				on:change={handleChange('propertyType')}
@@ -198,8 +195,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Bedrooms * </label>
+			<label for="bedrooms" class="mb-2 block text-sm font-medium text-gray-700">
+				Bedrooms *
+			</label>
 			<input
 				type="number"
 				min="0"
@@ -213,8 +211,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Bathrooms * </label>
+			<label for="bathrooms" class="mb-2 block text-sm font-medium text-gray-700">
+				Bathrooms *
+			</label>
 			<input
 				type="number"
 				min="0.5"
@@ -229,8 +228,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Square Feet * </label>
+			<label for="squareFeet" class="mb-2 block text-sm font-medium text-gray-700">
+				Square Feet *
+			</label>
 			<input
 				type="number"
 				min="1"
@@ -244,8 +244,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Monthly Rent * </label>
+			<label for="monthlyRent" class="mb-2 block text-sm font-medium text-gray-700">
+				Monthly Rent *
+			</label>
 			<input
 				type="number"
 				min="0"
@@ -260,8 +261,9 @@
 		</div>
 
 		<div>
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Security Deposit * </label>
+			<label for="deposit" class="mb-2 block text-sm font-medium text-gray-700">
+				Security Deposit *
+			</label>
 			<input
 				type="number"
 				min="0"
@@ -276,8 +278,9 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Amenities </label>
+			<label for="Amenities" class="mb-2 block text-sm font-medium text-gray-700">
+				Amenities
+			</label>
 			<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
 				{#each COMMON_AMENITIES as amenity (amenity)}
 					<label class="flex items-center space-x-2">
@@ -294,15 +297,16 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<!-- svelte-ignore a11y_label_has_associated_control -->
-			<label class="mb-2 block text-sm font-medium text-gray-700"> Description </label>
-			<!-- svelte-ignore element_invalid_self_closing_tag -->
+			<label for="Description" class="mb-2 block text-sm font-medium text-gray-700">
+				Description
+			</label>
 			<textarea
 				bind:value={formData.description}
 				on:input={handleChange('description')}
 				rows={4}
 				class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-			/>
+			>
+			</textarea>
 		</div>
 
 		<div class="md:col-span-2">

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { initializeAllStores } from '$lib/stores';
+	import { initializeAllStores, clients, properties, leaseAgreement as leases } from '$lib/stores';
 	import toast from 'svelte-5-french-toast';
 	import { onMount } from 'svelte';
 
@@ -25,28 +25,9 @@
 	import ClientList from '../components/Clients/ClientList.svelte';
 	import PropertyList from '../components/Properties/PropertyList.svelte';
 	import LeaseList from '../components/Leases/LeaseList.svelte';
-	import { writable } from 'svelte/store';
 	import type { Client, Property, LeaseAgreement } from '../types';
 
-	// Custom localStorage store implementation
-	function localStorageStore<T>(key: string, initialValue: T[]) {
-		const stored = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
-		const initial = stored ? JSON.parse(stored) : initialValue;
-		const store = writable<T[]>(initial);
-
-		if (typeof window !== 'undefined') {
-			store.subscribe((value) => {
-				localStorage.setItem(key, JSON.stringify(value));
-			});
-		}
-
-		return store;
-	}
-
 	let activeTab = 'dashboard';
-	const clients = localStorageStore<Client>('lease_tracker_clients', []);
-	const properties = localStorageStore<Property>('lease_tracker_properties', []);
-	const leases = localStorageStore<LeaseAgreement>('lease_tracker_leases', []);
 
 	function handleCreateClient(client: Client) {
 		clients.update((prev) => [...prev, client]);
@@ -140,32 +121,32 @@
 
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 		{#if activeTab === 'dashboard'}
-			<Dashboard {clients} {properties} {leases} />
+			<Dashboard clients={$clients} properties={$properties} leases={$leases} />
 		{:else if activeTab === 'clients'}
 			<ClientList
-				{clients}
+				clients={$clients}
 				onCreateClient={handleCreateClient}
 				onUpdateClient={handleUpdateClient}
 				onDeleteClient={handleDeleteClient}
 			/>
 		{:else if activeTab === 'properties'}
 			<PropertyList
-				{properties}
+				properties={$properties}
 				onCreateProperty={handleCreateProperty}
 				onUpdateProperty={handleUpdateProperty}
 				onDeleteProperty={handleDeleteProperty}
 			/>
 		{:else if activeTab === 'leases'}
 			<LeaseList
-				{leases}
-				{clients}
-				{properties}
+				leases={$leases}
+				clients={$clients}
+				properties={$properties}
 				onCreateLease={handleCreateLease}
 				onUpdateLease={handleUpdateLease}
 				onDeleteLease={handleDeleteLease}
 			/>
 		{:else}
-			<Dashboard {clients} {properties} {leases} />
+			<Dashboard clients={$clients} properties={$properties} leases={$leases} />
 		{/if}
 	</main>
 </div>

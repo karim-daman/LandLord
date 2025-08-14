@@ -2,15 +2,11 @@
 	import { formatCurrency } from '../../utils/helpers';
 	import type { Client, Property, LeaseAgreement } from '../../types';
 
+	import { building2, users, fileText, money, activity, calendar } from '../Icons/icons';
+
 	export let clients: Client[];
 	export let properties: Property[];
 	export let leases: LeaseAgreement[];
-
-	const building2 =
-		'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2-icon lucide-building-2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>';
-	const users = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>`;
-	const fileText = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>`;
-	const money = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-dollar-sign-icon lucide-circle-dollar-sign"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>`;
 
 	$: activeLeases = Array.isArray(leases)
 		? leases.filter((lease) => lease.status === 'active')
@@ -30,7 +26,6 @@
 			})
 		: [];
 
-	// Reactive declaration for stats array
 	$: stats = [
 		{
 			title: 'Total Clients',
@@ -117,27 +112,7 @@
 		<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 			<div class="mb-4 flex items-center space-x-2">
 				<span class="text-xl text-orange-600">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="24"
-						height="24"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="lucide lucide-calendar-days-icon lucide-calendar-days"
-						><path d="M8 2v4" /><path d="M16 2v4" /><rect
-							width="18"
-							height="18"
-							x="3"
-							y="4"
-							rx="2"
-						/><path d="M3 10h18" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path
-							d="M16 14h.01"
-						/><path d="M8 18h.01" /><path d="M12 18h.01" /><path d="M16 18h.01" /></svg
-					>
+					{@html calendar}
 				</span>
 				<h3 class="text-lg font-semibold text-gray-900">Expiring Soon</h3>
 			</div>
@@ -181,21 +156,7 @@
 	<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 		<div class="mb-4 flex items-center space-x-2">
 			<span class="text-xl text-blue-600">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="lucide lucide-activity-icon lucide-activity"
-					><path
-						d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
-					/></svg
-				>
+				{@html activity}
 			</span>
 			<h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
 		</div>
@@ -213,11 +174,15 @@
 						}`}
 					>
 						{#if 'firstName' in item}
-							<span class="text-blue-600">👥</span>
+							<span class="text-blue-600">
+								{@html users}
+							</span>
 						{:else if 'address' in item && !('clientId' in item)}
-							<span class="text-teal-600">🏢</span>
+							<span class="text-teal-600">
+								{@html building2}
+							</span>
 						{:else}
-							<span class="text-green-600">📝</span>
+							<span class="text-green-600">{@html fileText}</span>
 						{/if}
 					</div>
 					<div class="flex-1">

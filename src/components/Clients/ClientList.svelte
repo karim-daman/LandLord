@@ -3,6 +3,7 @@
 	import Modal from '../Common/Modal.svelte';
 	import ClientForm from './ClientForm.svelte';
 	import type { Client } from '../../types';
+	import { plus } from '../Icons/icons';
 
 	export let clients: Client[];
 	export let onCreateClient: (client: Client) => void;
@@ -68,12 +69,10 @@
 		<h2 class="text-2xl font-bold text-gray-900">Clients</h2>
 		<button
 			on:click={handleCreate}
-			class="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+			class="flex w-[150px] items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
 		>
-			<!-- Plus Icon -->
-			<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-			</svg> <span>Add Client</span>
+			{@html plus}
+			<span>Add Client</span>
 		</button>
 	</div>
 

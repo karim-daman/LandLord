@@ -4,6 +4,7 @@
 	import LeaseForm from './LeaseForm.svelte';
 	import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
 	import type { LeaseAgreement, Client, Property } from '../../types';
+	import { calendar, calendar2, edit, eye, home2, plus, trash, user } from '../Icons/icons';
 
 	export let leases: LeaseAgreement[];
 	export let clients: Client[];
@@ -28,10 +29,10 @@
 
 	// Reactive declarations to find the client and property for the selected lease
 	$: selectedClient = selectedLease
-		? clients.find((c) => c.id === selectedLease.clientId)
+		? clients.find((c) => c.id === selectedLease?.clientId)
 		: undefined;
 	$: selectedProperty = selectedLease
-		? properties.find((p) => p.id === selectedLease.propertyId)
+		? properties.find((p) => p.id === selectedLease?.propertyId)
 		: undefined;
 
 	// Added a check to ensure `leases` is an array before calling `.filter()`
@@ -98,33 +99,22 @@
 <div>
 	<div class="mb-6 flex items-center justify-between">
 		<h2 class="text-2xl font-bold text-gray-900">Lease Agreements</h2>
+
 		<button
 			on:click={handleCreate}
-			class="flex items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+			class="flex w-[150px] items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
 		>
-			<!-- Replaced Plus icon with SVG -->
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="24"
-				height="24"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				class="h-4 w-4"
-				><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"
-				></line></svg
-			>
+			{@html plus}
 			<span>Create Lease</span>
 		</button>
 	</div>
 
 	<SearchFilter
-		bind:searchTerm
+		{searchTerm}
+		onSearchChange={(term) => (searchTerm = term)}
 		{filterOptions}
-		bind:filterValue
+		{filterValue}
+		onFilterChange={(value) => (filterValue = value)}
 		placeholder="Search leases by client name or property address..."
 	/>
 
@@ -155,95 +145,28 @@
 								class="p-1 text-gray-400 transition-colors hover:text-green-600"
 								title="View Details"
 							>
-								<!-- Replaced Eye icon with SVG -->
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="h-4 w-4"
-									><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle
-										cx="12"
-										cy="12"
-										r="3"
-									></circle></svg
-								>
+								{@html eye}
 							</button>
 							<button
 								on:click={() => handleEdit(lease)}
 								class="p-1 text-gray-400 transition-colors hover:text-green-600"
 								title="Edit Lease"
 							>
-								<!-- Replaced Edit icon with SVG -->
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="h-4 w-4"
-									><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg
-								>
+								{@html edit}
 							</button>
 							<button
 								on:click={() => handleDelete(lease)}
 								class="p-1 text-gray-400 transition-colors hover:text-red-600"
 								title="Delete Lease"
 							>
-								<!-- Replaced Trash2 icon with SVG -->
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="h-4 w-4"
-									><polyline points="3 6 5 6 21 6"></polyline><path
-										d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-									></path><line x1="10" y1="11" x2="10" y2="17"></line><line
-										x1="14"
-										y1="11"
-										x2="14"
-										y2="17"
-									></line></svg
-								>
+								{@html trash}
 							</button>
 						</div>
 					</div>
 
 					<div class="space-y-3">
 						<div class="flex items-center text-sm text-gray-900">
-							<!-- Replaced User icon with SVG -->
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="mr-2 h-4 w-4 text-blue-600"
-								><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle
-									cx="12"
-									cy="7"
-									r="4"
-								></circle></svg
-							>
+							{@html user}
 							<span class="font-medium">
 								{clients.find((c) => c.id === lease.clientId)
 									? `${clients.find((c) => c.id === lease.clientId)?.firstName} ${clients.find((c) => c.id === lease.clientId)?.lastName}`
@@ -252,22 +175,7 @@
 						</div>
 
 						<div class="flex items-start text-sm text-gray-600">
-							<!-- Replaced Home icon with SVG -->
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-teal-600"
-								><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline
-									points="9 22 9 12 15 12 15 22"
-								></polyline></svg
-							>
+							{@html home2}
 							<span class="line-clamp-2">
 								{properties.find((p) => p.id === lease.propertyId)
 									? properties.find((p) => p.id === lease.propertyId)?.address
@@ -276,30 +184,7 @@
 						</div>
 
 						<div class="flex items-center text-sm text-gray-600">
-							<!-- Replaced Calendar icon with SVG -->
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="mr-2 h-4 w-4 text-orange-600"
-								><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line
-									x1="16"
-									y1="2"
-									x2="16"
-									y2="6"
-								></line><line x1="8" y1="2" x2="8" y2="6"></line><line
-									x1="3"
-									y1="10"
-									x2="21"
-									y2="10"
-								></line></svg
-							>
+							{@html calendar2}
 							<span>
 								{formatDate(lease.startDate)} - {formatDate(lease.endDate)}
 							</span>
@@ -369,7 +254,8 @@
 			<div class="space-y-6 p-6">
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Client</label>
+						<label for="lastName" class="mb-1 block text-sm font-medium text-gray-700">Client</label
+						>
 						<p class="text-sm text-gray-900">
 							{selectedClient
 								? `${selectedClient.firstName} ${selectedClient.lastName}`
@@ -380,29 +266,39 @@
 						{/if}
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Property</label>
+						<label for="Property" class="mb-1 block text-sm font-medium text-gray-700"
+							>Property</label
+						>
 						<p class="text-sm text-gray-900">
 							{selectedProperty ? selectedProperty.address : 'Unknown Property'}
 						</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Start Date</label>
+						<label for="startDate" class="mb-1 block text-sm font-medium text-gray-700"
+							>Start Date</label
+						>
 						<p class="text-sm text-gray-900">{formatDate(selectedLease.startDate)}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">End Date</label>
+						<label for="endDate" class="mb-1 block text-sm font-medium text-gray-700"
+							>End Date</label
+						>
 						<p class="text-sm text-gray-900">{formatDate(selectedLease.endDate)}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Monthly Rent</label>
+						<label for="monthlyRent" class="mb-1 block text-sm font-medium text-gray-700"
+							>Monthly Rent</label
+						>
 						<p class="text-sm text-gray-900">{formatCurrency(selectedLease.monthlyRent)}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Security Deposit</label>
+						<label for="securityDeposit" class="mb-1 block text-sm font-medium text-gray-700"
+							>Security Deposit</label
+						>
 						<p class="text-sm text-gray-900">{formatCurrency(selectedLease.securityDeposit)}</p>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Status</label>
+						<label for="Status" class="mb-1 block text-sm font-medium text-gray-700">Status</label>
 						<span
 							class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(selectedLease.status)}`}
 						>
@@ -410,7 +306,9 @@
 						</span>
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Signed Date</label>
+						<label for="signedDate" class="mb-1 block text-sm font-medium text-gray-700"
+							>Signed Date</label
+						>
 						<p class="text-sm text-gray-900">
 							{selectedLease.signedDate ? formatDate(selectedLease.signedDate) : 'Not signed'}
 						</p>
@@ -418,7 +316,9 @@
 
 					{#if selectedLease.terms}
 						<div class="md:col-span-2">
-							<label class="mb-1 block text-sm font-medium text-gray-700">Lease Terms</label>
+							<label for="terms" class="mb-1 block text-sm font-medium text-gray-700"
+								>Lease Terms</label
+							>
 							<div class="rounded-lg bg-gray-50 p-3 text-sm text-gray-900">
 								{selectedLease.terms}
 							</div>
@@ -427,7 +327,9 @@
 
 					{#if selectedLease.specialConditions}
 						<div class="md:col-span-2">
-							<label class="mb-1 block text-sm font-medium text-gray-700">Special Conditions</label>
+							<label for="specialConditions" class="mb-1 block text-sm font-medium text-gray-700"
+								>Special Conditions</label
+							>
 							<div class="rounded-lg bg-gray-50 p-3 text-sm text-gray-900">
 								{selectedLease.specialConditions}
 							</div>
