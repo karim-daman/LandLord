@@ -7,6 +7,25 @@
 		toast.promise(
 			initializeAllStores().then((res) => {
 				if (!res.success) throw new Error(res.message); // Convert to rejection
+
+				// Update lease statuses based on end date
+				leases.update((currentLeases) => {
+					const currentDate = new Date();
+					return currentLeases.map((lease) => {
+						const endDate = new Date(lease.endDate);
+						if (currentDate > endDate && lease.status === 'active') {
+							// Update property availability if lease is now expired
+							properties.update((props) =>
+								props.map((property) =>
+									property.id === lease.propertyId ? { ...property, isAvailable: true } : property
+								)
+							);
+							return { ...lease, status: 'expired' };
+						}
+						return lease;
+					});
+				});
+
 				return res.message; // Success case
 			}),
 			{

@@ -281,10 +281,10 @@
 	}
 
 	function getProgressColor(progress: number, isExpired: boolean): string {
-		if (isExpired) return 'bg-red-600';
-		if (progress <= 50) return 'bg-green-500';
-		if (progress <= 75) return 'bg-green-500';
-		return 'bg-red-500';
+		if (isExpired) return 'bg-red-500';
+		if (progress <= 50) return 'bg-green-600';
+		if (progress <= 75) return 'bg-green-600';
+		return 'bg-blue-600';
 	}
 </script>
 
@@ -357,8 +357,7 @@
 	</Modal>
 
 	<div class="mb-6 flex items-center justify-between">
-		<h2 class="text-2xl font-bold text-gray-900">Lease Agreements</h2>
-
+		<div></div>
 		<div class="flex items-center space-x-3">
 			<button
 				on:click={() => (showJsonModal = true)}
@@ -444,29 +443,34 @@
 								</span>
 							</div>
 
-							<div class="flex items-center text-sm text-gray-600">
-								{@html calendar2}
-								<span>
-									{formatDate(lease.startDate)} - {formatDate(lease.endDate)}
-								</span>
-							</div>
+							<div class="mr-1 flex justify-between">
+								<div class="flex items-center text-sm text-gray-600">
+									{@html calendar2}
+									<span>
+										{formatDate(lease.startDate)} - {formatDate(lease.endDate)}
+									</span>
+								</div>
 
-							<div class="flex items-center text-sm text-gray-600">
-								{@html calendarClock}
-								<span class:text-red-600={getDisplayStatus(lease) === 'expired'}>
-									Duration: {calculateLeaseDuration(lease.startDate, lease.endDate)}
-								</span>
+								<div class="flex items-center text-sm text-gray-600">
+									{@html calendarClock}
+									<span class:text-red-600={getDisplayStatus(lease) === 'expired'}>
+										Duration: {calculateLeaseDuration(lease.startDate, lease.endDate)}
+									</span>
+								</div>
 							</div>
 
 							<!-- The target div has been modified here -->
 							<div
 								id="target"
-								class="flex items-center justify-between gap-4 rounded-sm border border-gray-300 p-1 px-2"
-								class:bg-red-300={getDisplayStatus(lease) === 'expired'}
+								class="flex items-center justify-between gap-4 rounded-sm border border-gray-100 p-1 px-2 {getDisplayStatus(
+									lease
+								) === 'expired'
+									? 'bg-red-100'
+									: 'bg-green-100'} "
 							>
 								<!-- Left side: Remaining time -->
 
-								<div class="flex items-center border-gray-300 text-sm text-gray-600">
+								<div class="flex items-center border-gray-300 text-sm text-black">
 									{@html fadingClock}
 									<span
 										class={remainingDuration(lease.endDate) === 'Expired'
@@ -478,9 +482,9 @@
 								</div>
 
 								<!-- Right side: Progress bar -->
-								<div class="min-w-0 flex-1">
+								<div class="max-w-[50%] flex-1">
 									<div class="flex items-center justify-between">
-										<p class="text-sm text-gray-600">Lease Progress</p>
+										<p class="text-sm text-black">Lease Progress</p>
 										<span class="text-sm font-semibold text-gray-900">
 											{calculateLeaseProgress(lease.startDate, lease.endDate)}%
 										</span>
