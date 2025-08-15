@@ -9,8 +9,7 @@
 	const PROPERTY_TYPES = [
 		{ value: 'apartment', label: 'Apartment' },
 		{ value: 'house', label: 'House' },
-		{ value: 'condo', label: 'Condo' },
-		{ value: 'townhouse', label: 'Townhouse' },
+		{ value: 'garage', label: 'Garage' },
 		{ value: 'commercial', label: 'Commercial' }
 	] as const;
 

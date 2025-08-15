@@ -18,7 +18,7 @@ export interface Property {
 	city: string;
 	state: string;
 	zipCode: string;
-	propertyType: 'apartment' | 'house' | 'condo' | 'townhouse' | 'commercial';
+	propertyType: 'apartment' | 'house' | 'garage' | 'commercial';
 	bedrooms: number;
 	bathrooms: number;
 	squareFeet: number;

@@ -4,7 +4,21 @@
 	import LeaseForm from './LeaseForm.svelte';
 	import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
 	import type { LeaseAgreement, Client, Property } from '../../types';
-	import { calendarClock, calendar2, edit, eye, home2, plus, trash, user } from '../Icons/icons';
+	import {
+		calendarClock,
+		calendar2,
+		edit,
+		eye,
+		home2,
+		plus,
+		trash,
+		user,
+		fadingClock,
+		table,
+		grid
+	} from '../Icons/icons';
+
+	let showJsonModal = false;
 
 	export let leases: LeaseAgreement[];
 	export let clients: Client[];
@@ -19,6 +33,8 @@
 	let showDetails = false;
 	let selectedLease: LeaseAgreement | undefined;
 	let showDeleteConfirm = false;
+
+	let viewMode: 'card' | 'table' = 'card'; // New view mode state
 
 	const filterOptions = [
 		{ value: 'active', label: 'Active' },
@@ -106,37 +122,111 @@
 			months += 12;
 		}
 
-		return `years : ${years} , months : ${months} , days: ${days}`;
+		return `${years}y ${months}m ${days}d`;
 	}
 
 	/**
-	 * Checks if a lease is expiring within the next 30 days.
-	 * This is a more reliable check that avoids timezone issues.
-	 * @param endDate The lease's end date as a string.
-	 * @returns true if the lease is active and ends within 30 days, false otherwise.
+	 * Fixed function to check if a lease is expiring within 30 days
+	 * @param endDate The lease's end date (ISO format or Date-parsable string)
+	 * @returns true if the lease expires within 1-30 days from today
 	 */
-	function isExpiringSoon(endDate: string): boolean {
-		const now = new Date();
-		const end = new Date(endDate);
-		const oneDayInMs = 24 * 60 * 60 * 1000;
+	function isExpiringSoon(endDate: string, lease: any): boolean {
+		console.log(lease);
 
-		// The lease is only "expiring soon" if it's still active (end is in the future)
-		// and the time remaining is less than or equal to 30 days.
-		const timeDifference = end.getTime() - now.getTime();
-		const daysDifference = Math.ceil(timeDifference / oneDayInMs);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0); // Reset time to start of day
 
-		return daysDifference <= 30 && daysDifference > 0;
+		const expiry = new Date(endDate);
+		if (isNaN(expiry.getTime())) return false;
+		expiry.setHours(0, 0, 0, 0); // Reset time to start of day
+
+		// Calculate the difference in milliseconds
+		const timeDiff = expiry.getTime() - today.getTime();
+
+		// Convert to days
+		const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+		console.log(`Checking lease expiry: ${endDate}`);
+		console.log(`Today: ${today.toDateString()}`);
+		console.log(`Expiry: ${expiry.toDateString()}`);
+		console.log(`Days difference: ${daysDiff}`);
+
+		// Return true if lease expires within 1-30 days (inclusive)
+		// This means the lease is still active but will expire soon
+		return daysDiff >= 1 && daysDiff <= 30;
 	}
 
 	/**
-	 * Dynamically determines the display status of a lease.
+	 * Calculates the remaining duration of a lease from the current date to the end date.
+	 * @param endDate The lease's end date as a string.
+	 * @returns A string formatted as "X years, Y months, Z days remaining", or "Expired" if the lease is over.
+	 */
+	function remainingDuration(endDate: string): string {
+		const start = new Date();
+		const end = new Date(endDate);
+
+		// If the end date is invalid, return a default string
+		if (isNaN(end.getTime())) {
+			return 'Invalid Date';
+		}
+
+		// If the lease has already expired, return a specific message
+		if (end.getTime() < start.getTime()) {
+			return 'Expired';
+		}
+
+		// Calculate the difference in years, months, and days
+		let years = end.getFullYear() - start.getFullYear();
+		let months = end.getMonth() - start.getMonth();
+		let days = end.getDate() - start.getDate();
+
+		// Adjust for negative days
+		if (days < 0) {
+			months--;
+			const lastMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+			days += lastMonth.getDate();
+		}
+
+		// Adjust for negative months
+		if (months < 0) {
+			years--;
+			months += 12;
+		}
+
+		// Build the parts of the duration string
+		const parts = [];
+		if (years > 0) parts.push(`${years}y`);
+		if (months > 0) parts.push(`${months}m`);
+		if (days > 0) parts.push(`${days}d`);
+
+		// If no parts are available (e.g., less than a day remaining), show days
+		if (parts.length === 0) {
+			const timeDiff = end.getTime() - start.getTime();
+			const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+			return daysRemaining > 0 ? `${daysRemaining}d remaining` : 'Expired';
+		}
+
+		return parts.join(' ') + ' remaining';
+	}
+
+	/**
+	 * Dynamically determines the display status of a lease without modifying the original object.
 	 * @param lease The lease object.
-	 * @returns The appropriate status string ('expired', 'expiring-soon', or the original status).
+	 * @returns The appropriate status string ('expired' or the original status).
 	 */
 	function getDisplayStatus(lease: LeaseAgreement): string {
 		const now = new Date();
+		now.setHours(0, 0, 0, 0);
+
 		const endDate = new Date(lease.endDate);
-		if (endDate.getTime() < now.getTime()) return 'expired';
+		endDate.setHours(0, 0, 0, 0);
+
+		// If the lease end date has passed, return 'expired' regardless of original status
+		if (endDate.getTime() < now.getTime()) {
+			return 'expired';
+		}
+
+		// Otherwise, return the original status
 		return lease.status;
 	}
 
@@ -177,19 +267,40 @@
 		showDeleteConfirm = false;
 		selectedLease = undefined;
 	}
+
+	// Helper function to get client name
+	function getClientName(clientId: string): string {
+		const client = clients.find((c) => c.id === clientId);
+		return client ? `${client.firstName} ${client.lastName}` : 'Unknown Client';
+	}
+
+	// Helper function to get property address
+	function getPropertyAddress(propertyId: string): string {
+		const property = properties.find((p) => p.id === propertyId);
+		return property ? property.address : 'Unknown Property';
+	}
+
+	function getProgressColor(progress: number, isExpired: boolean): string {
+		if (isExpired) return 'bg-red-600';
+		if (progress <= 50) return 'bg-green-500';
+		if (progress <= 75) return 'bg-green-500';
+		return 'bg-red-500';
+	}
 </script>
 
 <div>
 	<div class="mb-6 flex items-center justify-between">
 		<h2 class="text-2xl font-bold text-gray-900">Lease Agreements</h2>
 
-		<button
-			on:click={handleCreate}
-			class="flex w-[150px] items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-		>
-			{@html plus}
-			<span>Create Lease</span>
-		</button>
+		<div class="flex items-center space-x-3">
+			<button
+				on:click={handleCreate}
+				class="flex w-[150px] items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+			>
+				{@html plus}
+				<span>Create Lease</span>
+			</button>
+		</div>
 	</div>
 
 	<SearchFilter
@@ -201,127 +312,379 @@
 		placeholder="Search leases by client name or property address..."
 	/>
 
-	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-		{#each filteredLeases as lease (lease.id)}
-			<div
-				class="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+	<div class="mb-1 flex justify-end">
+		<div class="flex rounded-lg border border-gray-300 bg-white p-1">
+			<button
+				on:click={() => (viewMode = 'card')}
+				class={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
+					viewMode === 'card' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
+				}`}
 			>
-				<div class="p-6">
-					<div class="mb-4 flex items-start justify-between">
-						<div class="flex items-center space-x-2">
-							<span
-								class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
-									getDisplayStatus(lease)
-								)}`}
-							>
-								{getDisplayStatus(lease).charAt(0).toUpperCase() + getDisplayStatus(lease).slice(1)}
-							</span>
-							{#if isExpiringSoon(lease.endDate) && lease.status === 'active'}
-								<span
-									class="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800"
-								>
-									Expiring Soon
-								</span>
-							{/if}
-						</div>
-						<div class="flex space-x-2">
-							<button
-								on:click={() => handleView(lease)}
-								class="p-1 text-gray-400 transition-colors hover:text-green-600"
-								title="View Details"
-							>
-								{@html eye}
-							</button>
-							<button
-								on:click={() => handleEdit(lease)}
-								class="p-1 text-gray-400 transition-colors hover:text-green-600"
-								title="Edit Lease"
-							>
-								{@html edit}
-							</button>
-							<button
-								on:click={() => handleDelete(lease)}
-								class="p-1 text-gray-400 transition-colors hover:text-red-600"
-								title="Delete Lease"
-							>
-								{@html trash}
-							</button>
-						</div>
-					</div>
-
-					<div class="space-y-3">
-						<div class="flex items-center text-sm text-gray-900">
-							{@html user}
-							<span class="font-medium">
-								{clients.find((c) => c.id === lease.clientId)
-									? `${clients.find((c) => c.id === lease.clientId)?.firstName} ${
-											clients.find((c) => c.id === lease.clientId)?.lastName
-										}`
-									: 'Unknown Client'}
-							</span>
-						</div>
-
-						<div class="flex items-start text-sm text-gray-600">
-							{@html home2}
-							<span class="line-clamp-2">
-								{properties.find((p) => p.id === lease.propertyId)
-									? properties.find((p) => p.id === lease.propertyId)?.address
-									: 'Unknown Property'}
-							</span>
-						</div>
-
-						<div class="flex items-center text-sm text-gray-600">
-							{@html calendar2}
-							<span>
-								{formatDate(lease.startDate)} - {formatDate(lease.endDate)}
-							</span>
-						</div>
-
-						<div class="flex items-center text-sm text-gray-600">
-							{@html calendarClock}
-							<span class:text-red-600={getDisplayStatus(lease) === 'expired'}>
-								{calculateLeaseDuration(lease.startDate, lease.endDate)}
-							</span>
-						</div>
-
-						<div class="w-full border-t border-gray-100 p-1 pt-3">
-							<div class="mb-1 flex items-center justify-between">
-								<p class="text-sm text-gray-600">Lease Progress</p>
-								<span class="text-sm font-semibold text-gray-900"
-									>{calculateLeaseProgress(lease.startDate, lease.endDate)}%</span
-								>
-							</div>
-							<div class="h-2 w-full rounded-full bg-gray-200">
-								<div
-									class="h-full rounded-full {getDisplayStatus(lease) === 'expired'
-										? 'bg-red-600'
-										: 'bg-blue-600'} transition-all duration-300 ease-in-out"
-									style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
-								></div>
-							</div>
-						</div>
-
-						<div class="flex items-center justify-between border-t border-gray-100 pt-3">
-							<div>
-								<p class="text-sm text-gray-600">Monthly Rent</p>
-								<p class="font-semibold text-gray-900">{formatCurrency(lease.monthlyRent)}</p>
-							</div>
-							<div class="text-right">
-								<p class="text-sm text-gray-600">Deposit</p>
-								<p class="font-semibold text-gray-900">{formatCurrency(lease.securityDeposit)}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="border-t border-gray-100 bg-gray-50 px-6 py-3">
-					<p class="text-xs text-gray-500">
-						Created {formatDate(lease.createdAt)}
-					</p>
-				</div>
-			</div>
-		{/each}
+				{@html grid}
+			</button>
+			<button
+				on:click={() => (viewMode = 'table')}
+				class={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
+					viewMode === 'table' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
+				}`}
+			>
+				{@html table}
+			</button>
+		</div>
 	</div>
+
+	<Modal
+		isOpen={showJsonModal}
+		onClose={() => (showJsonModal = false)}
+		title="Leases Data (JSON)"
+		maxWidth="max-w-4xl"
+	>
+		<div class="max-h-[70vh] overflow-auto p-6">
+			<pre class="rounded-lg bg-gray-100 p-4 text-xs text-gray-800">{JSON.stringify(
+					leases,
+					null,
+					2
+				)}</pre>
+		</div>
+		<div class="flex justify-end border-t p-4">
+			<button
+				on:click={() => (showJsonModal = false)}
+				class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+			>
+				Close
+			</button>
+		</div>
+	</Modal>
+
+	<div class="mb-6 flex items-center justify-between">
+		<h2 class="text-2xl font-bold text-gray-900">Lease Agreements</h2>
+
+		<div class="flex items-center space-x-3">
+			<button
+				on:click={() => (showJsonModal = true)}
+				class="flex w-[150px] items-center space-x-2 rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
+			>
+				code
+				<span>View JSON</span>
+			</button>
+			<button
+				on:click={handleCreate}
+				class="flex w-[150px] items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+			>
+				{@html plus}
+				<span>Create Lease</span>
+			</button>
+		</div>
+	</div>
+
+	{#if viewMode === 'card'}
+		<!-- Card View -->
+		<div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+			{#each filteredLeases as lease (lease.id)}
+				<div
+					class="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+				>
+					<div class="p-6">
+						<div class="mb-4 flex items-start justify-between">
+							<div class="flex items-center space-x-2">
+								<span
+									class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
+										getDisplayStatus(lease)
+									)}`}
+								>
+									{getDisplayStatus(lease).charAt(0).toUpperCase() +
+										getDisplayStatus(lease).slice(1)}
+								</span>
+								<!-- Show "Expiring Soon" badge only for active leases that are expiring within 30 days -->
+								{#if getDisplayStatus(lease) === 'active' && isExpiringSoon(lease.endDate, lease)}
+									<span
+										class="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800"
+									>
+										Expiring Soon
+									</span>
+								{/if}
+							</div>
+							<div class="flex space-x-2">
+								<button
+									on:click={() => handleView(lease)}
+									class="p-1 text-gray-400 transition-colors hover:text-green-600"
+									title="View Details"
+								>
+									{@html eye}
+								</button>
+								<button
+									on:click={() => handleEdit(lease)}
+									class="p-1 text-gray-400 transition-colors hover:text-green-600"
+									title="Edit Lease"
+								>
+									{@html edit}
+								</button>
+								<button
+									on:click={() => handleDelete(lease)}
+									class="p-1 text-gray-400 transition-colors hover:text-red-600"
+									title="Delete Lease"
+								>
+									{@html trash}
+								</button>
+							</div>
+						</div>
+
+						<div class="space-y-3">
+							<div class="flex items-center text-sm text-gray-900">
+								{@html user}
+								<span class="font-medium">
+									{getClientName(lease.clientId)}
+								</span>
+							</div>
+
+							<div class="flex items-start text-sm text-gray-600">
+								{@html home2}
+								<span class="line-clamp-2">
+									{getPropertyAddress(lease.propertyId)}
+								</span>
+							</div>
+
+							<div class="flex items-center text-sm text-gray-600">
+								{@html calendar2}
+								<span>
+									{formatDate(lease.startDate)} - {formatDate(lease.endDate)}
+								</span>
+							</div>
+
+							<div class="flex items-center text-sm text-gray-600">
+								{@html calendarClock}
+								<span class:text-red-600={getDisplayStatus(lease) === 'expired'}>
+									Duration: {calculateLeaseDuration(lease.startDate, lease.endDate)}
+								</span>
+							</div>
+
+							<!-- The target div has been modified here -->
+							<div
+								id="target"
+								class="flex items-center justify-between gap-4 rounded-sm border border-gray-300 p-1 px-2"
+								class:bg-red-300={getDisplayStatus(lease) === 'expired'}
+							>
+								<!-- Left side: Remaining time -->
+
+								<div class="flex items-center border-gray-300 text-sm text-gray-600">
+									{@html fadingClock}
+									<span
+										class={remainingDuration(lease.endDate) === 'Expired'
+											? 'text-red-600'
+											: 'text-gray-600'}
+									>
+										{remainingDuration(lease.endDate)}
+									</span>
+								</div>
+
+								<!-- Right side: Progress bar -->
+								<div class="min-w-0 flex-1">
+									<div class="flex items-center justify-between">
+										<p class="text-sm text-gray-600">Lease Progress</p>
+										<span class="text-sm font-semibold text-gray-900">
+											{calculateLeaseProgress(lease.startDate, lease.endDate)}%
+										</span>
+									</div>
+
+									<div class="h-2 w-full rounded-full bg-gray-200">
+										<div
+											class="h-full rounded-full transition-all duration-300 ease-in-out {getProgressColor(
+												calculateLeaseProgress(lease.startDate, lease.endDate),
+												getDisplayStatus(lease) === 'expired'
+											)}"
+											style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
+										></div>
+									</div>
+								</div>
+							</div>
+
+							<div class="flex items-center justify-between border-t border-gray-100 pt-3">
+								<div>
+									<p class="text-sm text-gray-600">Monthly Rent</p>
+									<p class="font-semibold text-gray-900">{formatCurrency(lease.monthlyRent)}</p>
+								</div>
+								<div class="text-right">
+									<p class="text-sm text-gray-600">Deposit</p>
+									<p class="font-semibold text-gray-900">{formatCurrency(lease.securityDeposit)}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="border-t border-gray-100 bg-gray-50 px-6 py-3">
+						<p class="text-xs text-gray-500">
+							Created {formatDate(lease.createdAt)}
+						</p>
+					</div>
+				</div>
+			{/each}
+		</div>
+	{:else}
+		<!-- Table View -->
+		<div class="ring-opacity-5 overflow-scroll bg-white shadow ring-1 ring-black md:rounded-lg">
+			<table class="min-w-full divide-y divide-gray-300">
+				<thead class="bg-gray-50">
+					<tr>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Status
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Client
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Property
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Period
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Duration
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Remaining
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Progress
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Monthly Rent
+						</th>
+						<th
+							scope="col"
+							class="px-6 py-3 text-left text-xs font-medium tracking-wide text-gray-500 uppercase"
+						>
+							Actions
+						</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-200 bg-white">
+					{#each filteredLeases as lease (lease.id)}
+						<tr class="hover:bg-gray-50">
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="flex items-center space-x-2">
+									<span
+										class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
+											getDisplayStatus(lease)
+										)}`}
+									>
+										{getDisplayStatus(lease).charAt(0).toUpperCase() +
+											getDisplayStatus(lease).slice(1)}
+									</span>
+									{#if getDisplayStatus(lease) === 'active' && isExpiringSoon(lease.endDate, lease)}
+										<span
+											class="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800"
+										>
+											Soon
+										</span>
+									{/if}
+								</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="text-sm font-medium text-gray-900">
+									{getClientName(lease.clientId)}
+								</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="max-w-xs truncate text-sm text-gray-900">
+									{getPropertyAddress(lease.propertyId)}
+								</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div
+									class="text-sm text-gray-900"
+									class:text-red-600={getDisplayStatus(lease) === 'expired'}
+								>
+									{calculateLeaseDuration(lease.startDate, lease.endDate)}
+								</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div
+									class="text-sm text-gray-900"
+									class:text-red-600={getDisplayStatus(lease) === 'expired'}
+								>
+									{remainingDuration(lease.endDate)}
+								</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="flex items-center">
+									<div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
+										<div
+											class="h-2 rounded-full {getProgressColor(
+												calculateLeaseProgress(lease.startDate, lease.endDate),
+												getDisplayStatus(lease) === 'expired'
+											)}"
+											style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
+										></div>
+									</div>
+
+									<span class="text-sm text-gray-900">
+										{calculateLeaseProgress(lease.startDate, lease.endDate)}%
+									</span>
+								</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="text-sm font-medium text-gray-900">
+									{formatCurrency(lease.monthlyRent)}
+								</div>
+								<div class="text-xs text-gray-500">
+									Deposit: {formatCurrency(lease.securityDeposit)}
+								</div>
+							</td>
+							<td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+								<div class="flex space-x-2">
+									<button
+										on:click={() => handleView(lease)}
+										class="p-1 text-gray-400 transition-colors hover:text-green-600"
+										title="View Details"
+									>
+										{@html eye}
+									</button>
+									<button
+										on:click={() => handleEdit(lease)}
+										class="p-1 text-gray-400 transition-colors hover:text-green-600"
+										title="Edit Lease"
+									>
+										{@html edit}
+									</button>
+									<button
+										on:click={() => handleDelete(lease)}
+										class="p-1 text-gray-400 transition-colors hover:text-red-600"
+										title="Delete Lease"
+									>
+										{@html trash}
+									</button>
+								</div>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+	{/if}
 
 	{#if filteredLeases.length === 0}
 		<div class="py-12 text-center">

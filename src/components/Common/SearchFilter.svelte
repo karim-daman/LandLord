@@ -9,7 +9,7 @@
 	export let placeholder = 'Search...';
 </script>
 
-<div class="mb-6 flex flex-col gap-4 sm:flex-row">
+<div class="mb-1 flex flex-col gap-4 sm:flex-row">
 	<div class="relative flex-1">
 		{@html search}
 		<input
