@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { initializeAllStores, clients, properties, leaseAgreement as leases } from '$lib/stores';
-	import toast from 'svelte-5-french-toast';
+	import toast, { Toaster } from 'svelte-5-french-toast';
 	import { onMount } from 'svelte';
 
 	onMount(async () => {
@@ -50,34 +50,57 @@
 
 	function handleCreateClient(client: Client) {
 		clients.update((prev) => [...prev, client]);
+
+		toast.success('Created Client', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleUpdateClient(updatedClient: Client) {
 		clients.update((prev) =>
 			prev.map((client) => (client.id === updatedClient.id ? updatedClient : client))
 		);
+		toast.success('Updated Client', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleDeleteClient(clientId: string) {
 		clients.update((prev) => prev.filter((client) => client.id !== clientId));
 		// Also remove any leases associated with this client
 		leases.update((prev) => prev.filter((lease) => lease.clientId !== clientId));
+
+		toast.success('Deleted Client', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleCreateProperty(property: Property) {
 		properties.update((prev) => [...prev, property]);
+
+		toast.success('Created Property', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleUpdateProperty(updatedProperty: Property) {
 		properties.update((prev) =>
 			prev.map((property) => (property.id === updatedProperty.id ? updatedProperty : property))
 		);
+
+		toast.success('Updated Property', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleDeleteProperty(propertyId: string) {
 		properties.update((prev) => prev.filter((property) => property.id !== propertyId));
 		// Also remove any leases associated with this property
 		leases.update((prev) => prev.filter((lease) => lease.propertyId !== propertyId));
+
+		toast.success('Deleted Property', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleCreateLease(lease: LeaseAgreement) {
@@ -90,6 +113,10 @@
 				)
 			);
 		}
+
+		toast.success('Created Lease', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleUpdateLease(updatedLease: LeaseAgreement) {
@@ -114,6 +141,10 @@
 
 			return updated;
 		});
+
+		toast.success('Updated Lease', {
+			position: 'bottom-right'
+		});
 	}
 
 	function handleDeleteLease(leaseId: string) {
@@ -131,6 +162,10 @@
 			}
 
 			return updated;
+		});
+
+		toast.success('Deleted Lease ', {
+			position: 'bottom-right'
 		});
 	}
 </script>

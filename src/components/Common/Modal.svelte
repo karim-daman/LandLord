@@ -18,7 +18,7 @@
 			<div
 				role="button"
 				tabindex="0"
-				class="bg-opacity-50 fixed inset-0 bg-black transition-opacity"
+				class="bg-opacity-50 fixed inset-0 backdrop-blur-md backdrop-brightness-50 transition-opacity"
 				on:click={onClose}
 				on:keydown={handleKeyDown}
 				aria-label="Close modal"

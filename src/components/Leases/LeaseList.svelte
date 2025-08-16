@@ -316,7 +316,7 @@
 		<div class="flex rounded-lg border border-gray-300 bg-white p-1">
 			<button
 				on:click={() => (viewMode = 'card')}
-				class={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
+				class={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
 					viewMode === 'card' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
 				}`}
 			>
@@ -324,7 +324,7 @@
 			</button>
 			<button
 				on:click={() => (viewMode = 'table')}
-				class={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
+				class={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
 					viewMode === 'table' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
 				}`}
 			>
@@ -429,14 +429,14 @@
 						</div>
 
 						<div class="space-y-3">
-							<div class="flex items-center text-sm text-gray-900">
+							<div class="flex items-center text-xs text-gray-900">
 								{@html user}
 								<span class="font-medium">
 									{getClientName(lease.clientId)}
 								</span>
 							</div>
 
-							<div class="flex items-start text-sm text-gray-600">
+							<div class="flex items-start text-xs text-gray-600">
 								{@html home2}
 								<span class="line-clamp-2">
 									{getPropertyAddress(lease.propertyId)}
@@ -444,14 +444,14 @@
 							</div>
 
 							<div class="mr-1 flex justify-between">
-								<div class="flex items-center text-sm text-gray-600">
+								<div class="flex items-center text-xs text-gray-600">
 									{@html calendar2}
 									<span>
 										{formatDate(lease.startDate)} - {formatDate(lease.endDate)}
 									</span>
 								</div>
 
-								<div class="flex items-center text-sm text-gray-600">
+								<div class="flex items-center text-xs text-gray-600">
 									{@html calendarClock}
 									<span class:text-red-600={getDisplayStatus(lease) === 'expired'}>
 										Duration: {calculateLeaseDuration(lease.startDate, lease.endDate)}
@@ -470,7 +470,7 @@
 							>
 								<!-- Left side: Remaining time -->
 
-								<div class="flex items-center border-gray-300 text-sm text-black">
+								<div class="flex items-center border-gray-300 text-xs text-black">
 									{@html fadingClock}
 									<span
 										class={remainingDuration(lease.endDate) === 'Expired'
@@ -484,8 +484,8 @@
 								<!-- Right side: Progress bar -->
 								<div class="max-w-[50%] flex-1">
 									<div class="flex items-center justify-between">
-										<p class="text-sm text-black">Lease Progress</p>
-										<span class="text-sm font-semibold text-gray-900">
+										<p class="text-xs text-black">Lease Progress</p>
+										<span class="text-xs font-semibold text-gray-900">
 											{calculateLeaseProgress(lease.startDate, lease.endDate)}%
 										</span>
 									</div>
@@ -504,11 +504,11 @@
 
 							<div class="flex items-center justify-between border-t border-gray-100 pt-3">
 								<div>
-									<p class="text-sm text-gray-600">Monthly Rent</p>
+									<p class="text-xs text-gray-600">Monthly Rent</p>
 									<p class="font-semibold text-gray-900">{formatCurrency(lease.monthlyRent)}</p>
 								</div>
 								<div class="text-right">
-									<p class="text-sm text-gray-600">Deposit</p>
+									<p class="text-xs text-gray-600">Deposit</p>
 									<p class="font-semibold text-gray-900">{formatCurrency(lease.securityDeposit)}</p>
 								</div>
 							</div>
@@ -608,18 +608,18 @@
 								</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
-								<div class="text-sm font-medium text-gray-900">
+								<div class="text-xs font-medium text-gray-900">
 									{getClientName(lease.clientId)}
 								</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
-								<div class="max-w-xs truncate text-sm text-gray-900">
+								<div class="max-w-xs truncate text-xs text-gray-900">
 									{getPropertyAddress(lease.propertyId)}
 								</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
 								<div
-									class="text-sm text-gray-900"
+									class="text-xs text-gray-900"
 									class:text-red-600={getDisplayStatus(lease) === 'expired'}
 								>
 									{calculateLeaseDuration(lease.startDate, lease.endDate)}
@@ -627,7 +627,7 @@
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
 								<div
-									class="text-sm text-gray-900"
+									class="text-xs text-gray-900"
 									class:text-red-600={getDisplayStatus(lease) === 'expired'}
 								>
 									{remainingDuration(lease.endDate)}
@@ -645,20 +645,20 @@
 										></div>
 									</div>
 
-									<span class="text-sm text-gray-900">
+									<span class="text-xs text-gray-900">
 										{calculateLeaseProgress(lease.startDate, lease.endDate)}%
 									</span>
 								</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
-								<div class="text-sm font-medium text-gray-900">
+								<div class="text-xs font-medium text-gray-900">
 									{formatCurrency(lease.monthlyRent)}
 								</div>
 								<div class="text-xs text-gray-500">
 									Deposit: {formatCurrency(lease.securityDeposit)}
 								</div>
 							</td>
-							<td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+							<td class="px-6 py-4 text-right text-xs font-medium whitespace-nowrap">
 								<div class="flex space-x-2">
 									<button
 										on:click={() => handleView(lease)}
@@ -732,9 +732,9 @@
 			<div class="space-y-6 p-6">
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
-						<label for="lastName" class="mb-1 block text-sm font-medium text-gray-700">Client</label
+						<label for="lastName" class="mb-1 block text-xs font-medium text-gray-700">Client</label
 						>
-						<p class="text-sm text-gray-900">
+						<p class="text-xs text-gray-900">
 							{selectedClient
 								? `${selectedClient.firstName} ${selectedClient.lastName}`
 								: 'Unknown Client'}
@@ -744,39 +744,39 @@
 						{/if}
 					</div>
 					<div>
-						<label for="Property" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="Property" class="mb-1 block text-xs font-medium text-gray-700"
 							>Property</label
 						>
-						<p class="text-sm text-gray-900">
+						<p class="text-xs text-gray-900">
 							{selectedProperty ? selectedProperty.address : 'Unknown Property'}
 						</p>
 					</div>
 					<div>
-						<label for="startDate" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="startDate" class="mb-1 block text-xs font-medium text-gray-700"
 							>Start Date</label
 						>
-						<p class="text-sm text-gray-900">{formatDate(selectedLease.startDate)}</p>
+						<p class="text-xs text-gray-900">{formatDate(selectedLease.startDate)}</p>
 					</div>
 					<div>
-						<label for="endDate" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="endDate" class="mb-1 block text-xs font-medium text-gray-700"
 							>End Date</label
 						>
-						<p class="text-sm text-gray-900">{formatDate(selectedLease.endDate)}</p>
+						<p class="text-xs text-gray-900">{formatDate(selectedLease.endDate)}</p>
 					</div>
 					<div>
-						<label for="monthlyRent" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="monthlyRent" class="mb-1 block text-xs font-medium text-gray-700"
 							>Monthly Rent</label
 						>
-						<p class="text-sm text-gray-900">{formatCurrency(selectedLease.monthlyRent)}</p>
+						<p class="text-xs text-gray-900">{formatCurrency(selectedLease.monthlyRent)}</p>
 					</div>
 					<div>
-						<label for="securityDeposit" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="securityDeposit" class="mb-1 block text-xs font-medium text-gray-700"
 							>Security Deposit</label
 						>
-						<p class="text-sm text-gray-900">{formatCurrency(selectedLease.securityDeposit)}</p>
+						<p class="text-xs text-gray-900">{formatCurrency(selectedLease.securityDeposit)}</p>
 					</div>
 					<div>
-						<label for="Status" class="mb-1 block text-sm font-medium text-gray-700">Status</label>
+						<label for="Status" class="mb-1 block text-xs font-medium text-gray-700">Status</label>
 						<span
 							class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
 								getDisplayStatus(selectedLease)
@@ -787,20 +787,20 @@
 						</span>
 					</div>
 					<div>
-						<label for="signedDate" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="signedDate" class="mb-1 block text-xs font-medium text-gray-700"
 							>Signed Date</label
 						>
-						<p class="text-sm text-gray-900">
+						<p class="text-xs text-gray-900">
 							{selectedLease.signedDate ? formatDate(selectedLease.signedDate) : 'Not signed'}
 						</p>
 					</div>
 
 					{#if selectedLease.terms}
 						<div class="md:col-span-2">
-							<label for="terms" class="mb-1 block text-sm font-medium text-gray-700"
+							<label for="terms" class="mb-1 block text-xs font-medium text-gray-700"
 								>Lease Terms</label
 							>
-							<div class="rounded-lg bg-gray-50 p-3 text-sm text-gray-900">
+							<div class="rounded-lg bg-gray-50 p-3 text-xs text-gray-900">
 								{selectedLease.terms}
 							</div>
 						</div>
@@ -808,10 +808,10 @@
 
 					{#if selectedLease.specialConditions}
 						<div class="md:col-span-2">
-							<label for="specialConditions" class="mb-1 block text-sm font-medium text-gray-700"
+							<label for="specialConditions" class="mb-1 block text-xs font-medium text-gray-700"
 								>Special Conditions</label
 							>
-							<div class="rounded-lg bg-gray-50 p-3 text-sm text-gray-900">
+							<div class="rounded-lg bg-gray-50 p-3 text-xs text-gray-900">
 								{selectedLease.specialConditions}
 							</div>
 						</div>

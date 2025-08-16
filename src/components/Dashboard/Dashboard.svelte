@@ -77,7 +77,7 @@
 			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm font-medium text-gray-600">{stat.title}</p>
+						<p class="text-xs font-medium text-gray-600">{stat.title}</p>
 						<p class="mt-1 text-2xl font-bold text-gray-900">{stat.value}</p>
 					</div>
 					<div class={`${stat.bgColor} rounded-lg p-3`}>
@@ -94,18 +94,18 @@
 			<h3 class="mb-4 text-lg font-semibold text-gray-900">Quick Overview</h3>
 			<div class="space-y-4">
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-gray-600">Available Properties</span>
-					<span class="text-sm font-medium text-teal-600">{availableProperties.length}</span>
+					<span class="text-xs text-gray-600">Available Properties</span>
+					<span class="text-xs font-medium text-teal-600">{availableProperties.length}</span>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-gray-600">Pending Leases</span>
-					<span class="text-sm font-medium text-yellow-600">
+					<span class="text-xs text-gray-600">Pending Leases</span>
+					<span class="text-xs font-medium text-yellow-600">
 						{Array.isArray(leases) ? leases.filter((l) => l.status === 'pending').length : 0}
 					</span>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-gray-600">Expired Leases</span>
-					<span class="text-sm font-medium text-red-600">
+					<span class="text-xs text-gray-600">Expired Leases</span>
+					<span class="text-xs font-medium text-red-600">
 						{expiredLeases.length}
 					</span>
 				</div>
@@ -127,7 +127,7 @@
 							class="flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 p-3"
 						>
 							<div>
-								<p class="text-sm font-medium text-gray-900">
+								<p class="text-xs font-medium text-gray-900">
 									{Array.isArray(clients)
 										? clients.find((c) => c.id === lease.clientId)?.firstName
 										: 'Unknown'}
@@ -150,7 +150,7 @@
 					{/each}
 				</div>
 			{:else}
-				<p class="text-sm text-gray-500">No leases expiring in the next 30 days</p>
+				<p class="text-xs text-gray-500">No leases expiring in the next 30 days</p>
 			{/if}
 		</div>
 	</div>
@@ -188,7 +188,7 @@
 						{/if}
 					</div>
 					<div class="flex-1">
-						<p class="text-sm font-medium text-gray-900">
+						<p class="text-xs font-medium text-gray-900">
 							{#if 'firstName' in item}
 								New client: {(item as Client).firstName} {(item as Client).lastName}
 							{:else if 'address' in item && !('clientId' in item)}

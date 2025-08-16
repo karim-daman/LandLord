@@ -161,17 +161,17 @@
 					</div>
 
 					<div class="space-y-3">
-						<div class="flex items-center text-sm text-gray-600">
+						<div class="flex items-center text-xs text-gray-600">
 							{@html mappin}
 							<span class="truncate">{property.city}, {property.state} {property.zipCode}</span>
 						</div>
-						<div class="flex items-center text-sm text-gray-600">
+						<div class="flex items-center text-xs text-gray-600">
 							{@html home}
 							<span
 								>{property.bedrooms} bed, {property.bathrooms} bath • {property.squareFeet} sq ft</span
 							>
 						</div>
-						<div class="flex items-center text-sm font-medium text-gray-900">
+						<div class="flex items-center text-xs font-medium text-gray-900">
 							{@html dollarsign}
 							<span>{formatCurrency(property.monthlyRent)}/month</span>
 						</div>
@@ -244,76 +244,76 @@
 			<div class="space-y-6 p-6">
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div class="md:col-span-2">
-						<label for="address" class="mb-1 block text-sm font-medium text-gray-700">Address</label
+						<label for="address" class="mb-1 block text-xs font-medium text-gray-700">Address</label
 						>
-						<p class="text-sm text-gray-900">{selectedProperty.address}</p>
+						<p class="text-xs text-gray-900">{selectedProperty.address}</p>
 					</div>
 					<div>
-						<label for="city" class="mb-1 block text-sm font-medium text-gray-700">City</label>
-						<p class="text-sm text-gray-900">{selectedProperty.city}</p>
+						<label for="city" class="mb-1 block text-xs font-medium text-gray-700">City</label>
+						<p class="text-xs text-gray-900">{selectedProperty.city}</p>
 					</div>
 					<div>
-						<label for="state" class="mb-1 block text-sm font-medium text-gray-700">State</label>
-						<p class="text-sm text-gray-900">{selectedProperty.state}</p>
+						<label for="state" class="mb-1 block text-xs font-medium text-gray-700">State</label>
+						<p class="text-xs text-gray-900">{selectedProperty.state}</p>
 					</div>
 					<div>
-						<label for="zipCode" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="zipCode" class="mb-1 block text-xs font-medium text-gray-700"
 							>ZIP Code</label
 						>
-						<p class="text-sm text-gray-900">{selectedProperty.zipCode}</p>
+						<p class="text-xs text-gray-900">{selectedProperty.zipCode}</p>
 					</div>
 					<div>
-						<label for="Type" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="Type" class="mb-1 block text-xs font-medium text-gray-700"
 							>Property Type</label
 						>
-						<p class="text-sm text-gray-900 capitalize">{selectedProperty.propertyType}</p>
+						<p class="text-xs text-gray-900 capitalize">{selectedProperty.propertyType}</p>
 					</div>
 					<div>
-						<label for="Bedrooms" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="Bedrooms" class="mb-1 block text-xs font-medium text-gray-700"
 							>Bedrooms</label
 						>
-						<p class="text-sm text-gray-900">{selectedProperty.bedrooms}</p>
+						<p class="text-xs text-gray-900">{selectedProperty.bedrooms}</p>
 					</div>
 					<div>
-						<label for="bathrooms" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="bathrooms" class="mb-1 block text-xs font-medium text-gray-700"
 							>Bathrooms</label
 						>
-						<p class="text-sm text-gray-900">{selectedProperty.bathrooms}</p>
+						<p class="text-xs text-gray-900">{selectedProperty.bathrooms}</p>
 					</div>
 					<div>
-						<label for="area" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="area" class="mb-1 block text-xs font-medium text-gray-700"
 							>Square Feet</label
 						>
-						<p class="text-sm text-gray-900">{selectedProperty.squareFeet.toLocaleString()}</p>
+						<p class="text-xs text-gray-900">{selectedProperty.squareFeet.toLocaleString()}</p>
 					</div>
 					<div>
-						<label for="rentAmount" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="rentAmount" class="mb-1 block text-xs font-medium text-gray-700"
 							>Monthly Rent</label
 						>
-						<p class="text-sm text-gray-900">{formatCurrency(selectedProperty.monthlyRent)}</p>
+						<p class="text-xs text-gray-900">{formatCurrency(selectedProperty.monthlyRent)}</p>
 					</div>
 					<div>
-						<label for="deposit" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="deposit" class="mb-1 block text-xs font-medium text-gray-700"
 							>Security Deposit</label
 						>
-						<p class="text-sm text-gray-900">{formatCurrency(selectedProperty.deposit)}</p>
+						<p class="text-xs text-gray-900">{formatCurrency(selectedProperty.deposit)}</p>
 					</div>
 					<div>
-						<label for="Availability" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="Availability" class="mb-1 block text-xs font-medium text-gray-700"
 							>Availability</label
 						>
-						<p class="text-sm text-gray-900">
+						<p class="text-xs text-gray-900">
 							{selectedProperty.isAvailable ? 'Available' : 'Occupied'}
 						</p>
 					</div>
 					{#if selectedProperty.amenities.length > 0}
 						<div class="md:col-span-2">
-							<label for="Amenities" class="mb-2 block text-sm font-medium text-gray-700"
+							<label for="Amenities" class="mb-2 block text-xs font-medium text-gray-700"
 								>Amenities</label
 							>
 							<div class="flex flex-wrap gap-2">
 								{#each selectedProperty.amenities as amenity (amenity)}
-									<span class="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
+									<span class="rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-800">
 										{amenity}
 									</span>
 								{/each}
@@ -322,10 +322,10 @@
 					{/if}
 					{#if selectedProperty.description}
 						<div class="md:col-span-2">
-							<label for="Description" class="mb-1 block text-sm font-medium text-gray-700"
+							<label for="Description" class="mb-1 block text-xs font-medium text-gray-700"
 								>Description</label
 							>
-							<p class="text-sm text-gray-900">{selectedProperty.description}</p>
+							<p class="text-xs text-gray-900">{selectedProperty.description}</p>
 						</div>
 					{/if}
 				</div>

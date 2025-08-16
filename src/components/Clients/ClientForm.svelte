@@ -78,7 +78,7 @@
 <form on:submit={handleSubmit} class="space-y-6 p-6">
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<label for="firstName" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="firstName" class="mb-2 block text-xs font-medium text-gray-700">
 				First Name *
 			</label>
 			<input
@@ -93,7 +93,7 @@
 		</div>
 
 		<div>
-			<label for="lastName" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="lastName" class="mb-2 block text-xs font-medium text-gray-700">
 				Last Name *
 			</label>
 			<input
@@ -109,7 +109,7 @@
 		</div>
 
 		<div>
-			<label for="email" class="mb-2 block text-sm font-medium text-gray-700"> Email * </label>
+			<label for="email" class="mb-2 block text-xs font-medium text-gray-700"> Email * </label>
 			<input
 				id="email"
 				type="email"
@@ -123,7 +123,7 @@
 		</div>
 
 		<div>
-			<label for="tel" class="mb-2 block text-sm font-medium text-gray-700"> Phone * </label>
+			<label for="tel" class="mb-2 block text-xs font-medium text-gray-700"> Phone * </label>
 			<input
 				id="tel"
 				type="tel"
@@ -137,7 +137,7 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<label for="address" class="mb-2 block text-sm font-medium text-gray-700"> Address * </label>
+			<label for="address" class="mb-2 block text-xs font-medium text-gray-700"> Address * </label>
 			<textarea
 				id="address"
 				bind:value={formData.address}
@@ -152,7 +152,7 @@
 		</div>
 
 		<div>
-			<label for="dateOfBirth" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="dateOfBirth" class="mb-2 block text-xs font-medium text-gray-700">
 				Date of Birth
 			</label>
 			<input
@@ -165,7 +165,7 @@
 		</div>
 
 		<div>
-			<label for="emergencyContact" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="emergencyContact" class="mb-2 block text-xs font-medium text-gray-700">
 				Emergency Contact
 			</label>
 			<input
@@ -178,7 +178,7 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<label for="emergencyPhone" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="emergencyPhone" class="mb-2 block text-xs font-medium text-gray-700">
 				Emergency Phone
 			</label>
 			<input

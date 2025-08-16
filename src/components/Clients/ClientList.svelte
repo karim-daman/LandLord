@@ -152,7 +152,7 @@
 					</div>
 				</div>
 				<div class="space-y-3">
-					<div class="flex items-center text-sm text-gray-600">
+					<div class="flex items-center text-xs text-gray-600">
 						<!-- Mail Icon -->
 						<svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path
@@ -163,7 +163,7 @@
 							/>
 						</svg> <span class="truncate">{client.email}</span>
 					</div>
-					<div class="flex items-center text-sm text-gray-600">
+					<div class="flex items-center text-xs text-gray-600">
 						<!-- Phone Icon -->
 						<svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path
@@ -174,7 +174,7 @@
 							/>
 						</svg> <span>{client.phone}</span>
 					</div>
-					<p class="line-clamp-2 text-sm text-gray-600">
+					<p class="line-clamp-2 text-xs text-gray-600">
 						{client.address}
 					</p>
 				</div>
@@ -225,46 +225,46 @@
 			<div class="space-y-6 p-6">
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
-						<label for="Name" class="mb-1 block text-sm font-medium text-gray-700">Name</label>
-						<p class="text-sm text-gray-900">
+						<label for="Name" class="mb-1 block text-xs font-medium text-gray-700">Name</label>
+						<p class="text-xs text-gray-900">
 							{selectedClient.firstName}
 							{selectedClient.lastName}
 						</p>
 					</div>
 					<div>
-						<label for="email" class="mb-1 block text-sm font-medium text-gray-700">Email</label>
-						<p class="text-sm text-gray-900">{selectedClient.email}</p>
+						<label for="email" class="mb-1 block text-xs font-medium text-gray-700">Email</label>
+						<p class="text-xs text-gray-900">{selectedClient.email}</p>
 					</div>
 					<div>
-						<label for="phone" class="mb-1 block text-sm font-medium text-gray-700">Phone</label>
-						<p class="text-sm text-gray-900">{selectedClient.phone}</p>
+						<label for="phone" class="mb-1 block text-xs font-medium text-gray-700">Phone</label>
+						<p class="text-xs text-gray-900">{selectedClient.phone}</p>
 					</div>
 					<div>
-						<label for="dateOfBirth" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="dateOfBirth" class="mb-1 block text-xs font-medium text-gray-700"
 							>Date of Birth</label
 						>
-						<p class="text-sm text-gray-900">
+						<p class="text-xs text-gray-900">
 							{selectedClient.dateOfBirth
 								? new Date(selectedClient.dateOfBirth).toLocaleDateString()
 								: 'Not provided'}
 						</p>
 					</div>
 					<div class="md:col-span-2">
-						<label for="address" class="mb-1 block text-sm font-medium text-gray-700">Address</label
+						<label for="address" class="mb-1 block text-xs font-medium text-gray-700">Address</label
 						>
-						<p class="text-sm text-gray-900">{selectedClient.address}</p>
+						<p class="text-xs text-gray-900">{selectedClient.address}</p>
 					</div>
 					<div>
-						<label for="emergencyContact" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="emergencyContact" class="mb-1 block text-xs font-medium text-gray-700"
 							>Emergency Contact</label
 						>
-						<p class="text-sm text-gray-900">{selectedClient.emergencyContact || 'Not provided'}</p>
+						<p class="text-xs text-gray-900">{selectedClient.emergencyContact || 'Not provided'}</p>
 					</div>
 					<div>
-						<label for="emergencyPhone" class="mb-1 block text-sm font-medium text-gray-700"
+						<label for="emergencyPhone" class="mb-1 block text-xs font-medium text-gray-700"
 							>Emergency Phone</label
 						>
-						<p class="text-sm text-gray-900">{selectedClient.emergencyPhone || 'Not provided'}</p>
+						<p class="text-xs text-gray-900">{selectedClient.emergencyPhone || 'Not provided'}</p>
 					</div>
 				</div>
 				<div class="border-t pt-4">

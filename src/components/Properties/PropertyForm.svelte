@@ -127,7 +127,7 @@
 <form on:submit={handleSubmit} class="space-y-6 p-6">
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div class="md:col-span-2">
-			<label for="address" class="mb-2 block text-sm font-medium text-gray-700"> Address * </label>
+			<label for="address" class="mb-2 block text-xs font-medium text-gray-700"> Address * </label>
 			<input
 				type="text"
 				bind:value={formData.address}
@@ -140,7 +140,7 @@
 		</div>
 
 		<div>
-			<label for="city" class="mb-2 block text-sm font-medium text-gray-700"> City * </label>
+			<label for="city" class="mb-2 block text-xs font-medium text-gray-700"> City * </label>
 			<input
 				type="text"
 				bind:value={formData.city}
@@ -153,7 +153,7 @@
 		</div>
 
 		<div>
-			<label for="state" class="mb-2 block text-sm font-medium text-gray-700"> State * </label>
+			<label for="state" class="mb-2 block text-xs font-medium text-gray-700"> State * </label>
 			<input
 				type="text"
 				bind:value={formData.state}
@@ -166,7 +166,7 @@
 		</div>
 
 		<div>
-			<label for="zipCode" class="mb-2 block text-sm font-medium text-gray-700"> ZIP Code * </label>
+			<label for="zipCode" class="mb-2 block text-xs font-medium text-gray-700"> ZIP Code * </label>
 			<input
 				type="text"
 				bind:value={formData.zipCode}
@@ -179,7 +179,7 @@
 		</div>
 
 		<div>
-			<label for="propertyType" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="propertyType" class="mb-2 block text-xs font-medium text-gray-700">
 				Property Type *
 			</label>
 			<select
@@ -194,7 +194,7 @@
 		</div>
 
 		<div>
-			<label for="bedrooms" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="bedrooms" class="mb-2 block text-xs font-medium text-gray-700">
 				Bedrooms *
 			</label>
 			<input
@@ -210,7 +210,7 @@
 		</div>
 
 		<div>
-			<label for="bathrooms" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="bathrooms" class="mb-2 block text-xs font-medium text-gray-700">
 				Bathrooms *
 			</label>
 			<input
@@ -227,7 +227,7 @@
 		</div>
 
 		<div>
-			<label for="squareFeet" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="squareFeet" class="mb-2 block text-xs font-medium text-gray-700">
 				Square Feet *
 			</label>
 			<input
@@ -243,7 +243,7 @@
 		</div>
 
 		<div>
-			<label for="monthlyRent" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="monthlyRent" class="mb-2 block text-xs font-medium text-gray-700">
 				Monthly Rent *
 			</label>
 			<input
@@ -260,7 +260,7 @@
 		</div>
 
 		<div>
-			<label for="deposit" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="deposit" class="mb-2 block text-xs font-medium text-gray-700">
 				Security Deposit *
 			</label>
 			<input
@@ -277,7 +277,7 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<label for="Amenities" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="Amenities" class="mb-2 block text-xs font-medium text-gray-700">
 				Amenities
 			</label>
 			<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -289,14 +289,14 @@
 							on:change={() => handleAmenityChange(amenity)}
 							class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 						/>
-						<span class="text-sm text-gray-700">{amenity}</span>
+						<span class="text-xs text-gray-700">{amenity}</span>
 					</label>
 				{/each}
 			</div>
 		</div>
 
 		<div class="md:col-span-2">
-			<label for="Description" class="mb-2 block text-sm font-medium text-gray-700">
+			<label for="Description" class="mb-2 block text-xs font-medium text-gray-700">
 				Description
 			</label>
 			<textarea
@@ -316,7 +316,7 @@
 					on:change={handleChange('isAvailable')}
 					class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 				/>
-				<span class="text-sm font-medium text-gray-700">Available for Rent</span>
+				<span class="text-xs font-medium text-gray-700">Available for Rent</span>
 			</label>
 		</div>
 	</div>
