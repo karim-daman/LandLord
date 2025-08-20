@@ -4,6 +4,7 @@
 	import LeaseForm from './LeaseForm.svelte';
 	import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
 	import type { LeaseAgreement, Client, Property } from '../../types';
+	import HoverModal from '../Common/HoverModal.svelte';
 	import {
 		calendarClock,
 		calendar2,
@@ -333,24 +334,24 @@
 								</span>
 							{/if}
 						</div>
-						<div class="flex space-x-2">
+						<div class="flex space-x-2 border-gray-300">
 							<button
 								on:click={() => handleView(lease)}
-								class="p-1 text-gray-400 transition-colors hover:text-green-600"
+								class="rounded-md border p-1 px-1 text-gray-400 transition-colors hover:text-green-600"
 								title="View Details"
 							>
 								{@html eye}
 							</button>
 							<button
 								on:click={() => handleEdit(lease)}
-								class="p-1 text-gray-400 transition-colors hover:text-green-600"
+								class="rounded-md border p-1 px-1 text-gray-400 transition-colors hover:text-green-600"
 								title="Edit Lease"
 							>
 								{@html edit}
 							</button>
 							<button
 								on:click={() => handleDelete(lease)}
-								class="p-1 text-gray-400 transition-colors hover:text-red-600"
+								class="rounded-md border p-1 px-1 text-gray-400 transition-colors hover:text-red-600"
 								title="Delete Lease"
 							>
 								{@html trash}
@@ -359,42 +360,6 @@
 					</div>
 
 					<div class="space-y-3">
-						<!-- <div>
-							<div class="flex justify-between">
-								<div class="flex items-center text-xs text-gray-900">
-									{@html user}
-									<span class="">
-										Tenant:
-										{getClientName(lease.clientId)}
-									</span>
-								</div>
-
-								<div class="flex items-start text-xs text-gray-600">
-									{@html home2}
-									<span class="line-clamp-2">
-										Address:
-										{getPropertyAddress(lease.propertyId)}
-									</span>
-								</div>
-							</div>
-
-							<div class="mr-1 flex justify-between">
-								<div class="flex items-center text-xs text-gray-600">
-									{@html calendar2}
-									<span>
-										Duration: {formatDate(lease.startDate)} - {formatDate(lease.endDate)}
-									</span>
-								</div>
-
-								<div class="flex items-center text-xs text-gray-600">
-									{@html calendarClock}
-									<span class:text-red-600={getDisplayStatus(lease) === 'expired'}>
-										Duration: {calculateLeaseDuration(lease.startDate, lease.endDate)}
-									</span>
-								</div>
-							</div>
-						</div> -->
-
 						<div class="grid grid-cols-2 gap-2 gap-x-28 text-xs">
 							<!-- Row 1 -->
 							<div class="flex items-center text-gray-900">
@@ -424,7 +389,7 @@
 							<div class="flex items-center text-gray-600">
 								{@html calendarClock}
 								<span class="" class:text-red-600={getDisplayStatus(lease) === 'expired'}>
-									Remaining Duration: <br />{calculateLeaseDuration(lease.startDate, lease.endDate)}
+									Contract Duration: <br />{calculateLeaseDuration(lease.startDate, lease.endDate)}
 								</span>
 							</div>
 						</div>
@@ -469,8 +434,8 @@
 					</div>
 				</div>
 
-				<div class="flex items-center justify-between border-t border-gray-100 p-4 pt-3">
-					<div>
+				<!-- <div class="flex items-center justify-between border-t border-gray-100 p-4 pt-3">
+					<div class="target">
 						<p class="text-xs text-gray-600">Monthly Rent</p>
 						<p class="font-semibold text-gray-900">{formatCurrency(lease.monthlyRent)}</p>
 					</div>
@@ -478,13 +443,87 @@
 						<p class="text-xs text-gray-600">Deposit</p>
 						<p class="font-semibold text-gray-900">{formatCurrency(lease.securityDeposit)}</p>
 					</div>
-				</div>
-			</div>
+				</div> -->
+				<div class="flex items-center justify-between border-t border-gray-100 p-4 pt-3">
+					<!-- 
+					
+					//// Basic usage 
+					
+					<HoverModal>
+					<div slot="target">Hover me!</div>
+					<div slot="content">Modal content here</div>
+					</HoverModal>
 
-			<div class="border-t border-gray-100 bg-gray-50 px-6 py-3">
-				<p class="text-xs text-gray-500">
-					Created {formatDate(lease.createdAt)}
-				</p>
+					//// With custom options 
+					
+					<HoverModal
+						width={300}
+						height={200}
+						delay={500}
+						position="top"
+						modalClass="bg-gray-900 text-white"
+					>
+						<div slot="target">Custom hover target</div>
+						<div slot="content">Custom modal content</div>
+					</HoverModal>
+
+					-->
+
+					<HoverModal
+						width={400}
+						height={320}
+						on:show={() => console.log('Modal shown')}
+						on:hide={() => console.log('Modal hidden')}
+					>
+						<div slot="target">
+							<p class="text-xs text-gray-600">Monthly Rent</p>
+							<p class="font-semibold text-gray-900">{formatCurrency(lease.monthlyRent)}</p>
+						</div>
+
+						<div slot="content">
+							<h3 class="mb-4 text-lg font-semibold text-gray-900">Lease Details</h3>
+
+							<div class="space-y-4">
+								<div>
+									<p class="text-sm font-medium text-gray-700">Monthly Rent</p>
+									<p class="text-lg font-semibold text-gray-900">
+										{formatCurrency(lease.monthlyRent)}
+									</p>
+								</div>
+
+								<div>
+									<p class="text-sm font-medium text-gray-700">Security Deposit</p>
+									<p class="text-lg font-semibold text-gray-900">
+										{formatCurrency(lease.securityDeposit)}
+									</p>
+								</div>
+
+								<div>
+									<p class="text-sm font-medium text-gray-700">Lease Term</p>
+									<p class="text-sm text-gray-900">{lease.startDate} - {lease.endDate}</p>
+								</div>
+
+								<div class="border-t border-gray-200 pt-4">
+									<p class="text-sm text-gray-600">
+										This lease agreement includes standard terms and conditions for the rental
+										property.
+									</p>
+								</div>
+							</div>
+						</div>
+					</HoverModal>
+
+					<div class="text-right">
+						<p class="text-xs text-gray-600">Deposit</p>
+						<p class="font-semibold text-gray-900">{formatCurrency(lease.securityDeposit)}</p>
+					</div>
+				</div>
+
+				<div class="m-1 border-t border-gray-300 bg-gray-50 p-1 px-2">
+					<p class="text-xs text-gray-500">
+						Created {formatDate(lease.createdAt)}
+					</p>
+				</div>
 			</div>
 		{/each}
 	</div>
@@ -661,3 +700,6 @@
 		</div>
 	</Modal>
 </div>
+
+<style>
+</style>

@@ -308,7 +308,7 @@
 			</textarea>
 		</div>
 
-		<div class="md:col-span-2">
+		<!-- <div class="md:col-span-2">
 			<label class="flex items-center space-x-2">
 				<input
 					type="checkbox"
@@ -318,7 +318,7 @@
 				/>
 				<span class="text-xs font-medium text-gray-700">Available for Rent</span>
 			</label>
-		</div>
+		</div> -->
 	</div>
 
 	<div class="flex justify-end space-x-3 border-t border-gray-200 pt-6">
