@@ -2,4 +2,5 @@
 
 button {
 	@apply hover:cursor-pointer;
+	@apply transition active:translate-y-1 active:scale-95 active:transform;
 }

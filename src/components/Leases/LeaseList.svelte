@@ -220,6 +220,7 @@
 		endDate.setHours(0, 0, 0, 0);
 
 		// If the lease end date has passed, return 'expired' regardless of original status
+
 		if (endDate.getTime() < now.getTime()) {
 			return 'expired';
 		}
@@ -279,10 +280,10 @@
 	}
 
 	function getProgressColor(progress: number, isExpired: boolean): string {
-		if (isExpired) return 'bg-red-500';
+		// if (isExpired) return 'bg-red-500';
 		if (progress <= 50) return 'bg-green-600';
 		if (progress <= 75) return 'bg-green-600';
-		return 'bg-blue-600';
+		return 'bg-red-600';
 	}
 </script>
 
@@ -325,7 +326,6 @@
 							>
 								{getDisplayStatus(lease).charAt(0).toUpperCase() + getDisplayStatus(lease).slice(1)}
 							</span>
-							<!-- Show "Expiring Soon" badge only for active leases that are expiring within 30 days -->
 							{#if getDisplayStatus(lease) === 'active' && isExpiringSoon(lease.endDate, lease)}
 								<span
 									class="rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800"
@@ -360,115 +360,108 @@
 					</div>
 
 					<div class="space-y-3">
-						<div class="grid grid-cols-2 gap-2 gap-x-28 text-xs">
-							<!-- Row 1 -->
-							<div class="flex items-center text-gray-900">
+						<div class=" text-xs">
+							<div class="mb-2 flex items-center text-gray-900">
 								{@html user}
 								<span class="">
 									Tenant: {getClientName(lease.clientId)}
 								</span>
 							</div>
 
-							<div class="flex items-center text-gray-600">
+							<div class="mb-2 flex items-center text-gray-600">
 								{@html home2}
 								<span class=" line-clamp-2">
-									Address: <br />
+									Address:
 									{getPropertyAddress(lease.propertyId)}
 								</span>
 							</div>
 
-							<!-- Row 2 -->
-							<div class="flex items-center text-gray-600">
-								{@html calendar2}
-								<span class="">
-									from: {formatDate(lease.startDate)} <br />
+							<div class="flex justify-between text-gray-600">
+								<span class="flex">
+									{@html calendar2}
+									from: {formatDate(lease.startDate)}
 									to: {formatDate(lease.endDate)}
 								</span>
-							</div>
 
-							<div class="flex items-center text-gray-600">
-								{@html calendarClock}
-								<span class="" class:text-red-600={getDisplayStatus(lease) === 'expired'}>
-									Contract Duration: <br />{calculateLeaseDuration(lease.startDate, lease.endDate)}
+								<span class="w-[30%]">
+									<div class="flex items-center justify-between">
+										<!-- <p class="mb-0.5 text-xs text-black">Lease Progress</p> -->
+										<span class="text-xs font-semibold text-gray-900">
+											{calculateLeaseProgress(lease.startDate, lease.endDate)}%
+										</span>
+									</div>
+
+									<div class="h-2 rounded-full bg-gray-200">
+										<div
+											class="h-full rounded-full transition-all duration-300 ease-in-out {getProgressColor(
+												calculateLeaseProgress(lease.startDate, lease.endDate),
+												getDisplayStatus(lease) === 'expired'
+											)}"
+											style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
+										></div>
+									</div>
 								</span>
 							</div>
-						</div>
 
-						<div
-							class="flex items-center justify-between gap-4 rounded-sm border border-gray-100 p-1 px-2 {getDisplayStatus(
-								lease
-							) === 'expired'
-								? 'bg-red-100'
-								: 'bg-green-100'} "
-						>
-							<div class="max-w-[50%] flex-1">
-								<div class="flex items-center justify-between">
-									<p class="mb-0.5 text-xs text-black">Lease Progress</p>
-									<span class="text-xs font-semibold text-gray-900">
-										{calculateLeaseProgress(lease.startDate, lease.endDate)}%
-									</span>
-								</div>
+							<div class=" flex justify-between text-gray-600">
+								<span class="flex" class:text-red-600={getDisplayStatus(lease) === 'Expired'}>
+									{@html calendarClock}
+									Duration: {calculateLeaseDuration(lease.startDate, lease.endDate)}
+								</span>
 
-								<div class="h-2 w-full rounded-full bg-gray-200">
-									<div
-										class="h-full rounded-full transition-all duration-300 ease-in-out {getProgressColor(
-											calculateLeaseProgress(lease.startDate, lease.endDate),
-											getDisplayStatus(lease) === 'expired'
-										)}"
-										style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
-									></div>
-								</div>
-							</div>
-
-							<div class="flex items-center border-gray-300 text-xs text-black">
-								{@html fadingClock}
-								<span
-									class={remainingDuration(lease.endDate) === 'Expired'
-										? 'text-red-600'
-										: 'text-gray-600'}
-								>
-									{remainingDuration(lease.endDate)}
+								<span class="w-[30%]" class:text-red-600={getDisplayStatus(lease) === 'Expired'}>
+									<div class="flex items-center border-gray-300 text-xs text-black">
+										<!-- {@html fadingClock} -->
+										<span
+											class={remainingDuration(lease.endDate) === 'Expired'
+												? 'text-red-600'
+												: 'text-gray-600'}
+										>
+											{remainingDuration(lease.endDate)}
+										</span>
+									</div>
 								</span>
 							</div>
 						</div>
 					</div>
+
+					<!-- <div
+						class="mt-4 flex items-center justify-between gap-4 rounded-sm border border-gray-100 p-1 px-2
+							{remainingDuration(lease.endDate) === 'Expired' ? 'bg-red-100' : 'bg-green-100'} "
+					>
+						<div class="max-w-[50%] flex-1">
+							<div class="flex items-center justify-between">
+								<p class="mb-0.5 text-xs text-black">Lease Progress</p>
+								<span class="text-xs font-semibold text-gray-900">
+									{calculateLeaseProgress(lease.startDate, lease.endDate)}%
+								</span>
+							</div>
+
+							<div class="h-2 w-full rounded-full bg-gray-200">
+								<div
+									class="h-full rounded-full transition-all duration-300 ease-in-out {getProgressColor(
+										calculateLeaseProgress(lease.startDate, lease.endDate),
+										getDisplayStatus(lease) === 'expired'
+									)}"
+									style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
+								></div>
+							</div>
+						</div>
+
+						<div class="flex items-center border-gray-300 text-xs text-black">
+							{@html fadingClock}
+							<span
+								class={remainingDuration(lease.endDate) === 'Expired'
+									? 'text-red-600'
+									: 'text-gray-600'}
+							>
+								{remainingDuration(lease.endDate)}
+							</span>
+						</div>
+					</div> -->
 				</div>
 
-				<!-- <div class="flex items-center justify-between border-t border-gray-100 p-4 pt-3">
-					<div class="target">
-						<p class="text-xs text-gray-600">Monthly Rent</p>
-						<p class="font-semibold text-gray-900">{formatCurrency(lease.monthlyRent)}</p>
-					</div>
-					<div class="text-right">
-						<p class="text-xs text-gray-600">Deposit</p>
-						<p class="font-semibold text-gray-900">{formatCurrency(lease.securityDeposit)}</p>
-					</div>
-				</div> -->
 				<div class="flex items-center justify-between border-t border-gray-100 p-4 pt-3">
-					<!-- 
-					
-					//// Basic usage 
-					
-					<HoverModal>
-					<div slot="target">Hover me!</div>
-					<div slot="content">Modal content here</div>
-					</HoverModal>
-
-					//// With custom options 
-					
-					<HoverModal
-						width={300}
-						height={200}
-						delay={500}
-						position="top"
-						modalClass="bg-gray-900 text-white"
-					>
-						<div slot="target">Custom hover target</div>
-						<div slot="content">Custom modal content</div>
-					</HoverModal>
-
-					-->
-
 					<HoverModal
 						width={400}
 						height={320}
@@ -702,4 +695,38 @@
 </div>
 
 <style>
+	.glass-morphism {
+		backdrop-filter: blur(16px) saturate(180%);
+		background-color: rgba(255, 255, 255, 0.75);
+		border: 1px solid rgba(255, 255, 255, 0.125);
+	}
+
+	.gradient-border {
+		background:
+			linear-gradient(white, white) padding-box,
+			linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+		border: 2px solid transparent;
+	}
+
+	.hover-lift {
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.hover-lift:hover {
+		transform: translateY(-8px);
+		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+	}
+
+	.status-glow {
+		box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+	}
+
+	.expiring-glow {
+		box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+	}
+
+	.modal-backdrop {
+		backdrop-filter: blur(8px);
+		background-color: rgba(0, 0, 0, 0.3);
+	}
 </style>
