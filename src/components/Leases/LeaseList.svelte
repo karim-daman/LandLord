@@ -464,7 +464,7 @@
 				<div class="flex items-center justify-between border-t border-gray-100 p-4 pt-3">
 					<HoverModal
 						width={400}
-						height={320}
+						height={190}
 						on:show={() => console.log('Modal shown')}
 						on:hide={() => console.log('Modal hidden')}
 					>
@@ -476,7 +476,7 @@
 						<div slot="content">
 							<h3 class="mb-4 text-lg font-semibold text-gray-900">Lease Details</h3>
 
-							<div class="space-y-4">
+							<div class="flex justify-between space-y-4">
 								<div>
 									<p class="text-sm font-medium text-gray-700">Monthly Rent</p>
 									<p class="text-lg font-semibold text-gray-900">
@@ -490,18 +490,11 @@
 										{formatCurrency(lease.securityDeposit)}
 									</p>
 								</div>
+							</div>
 
-								<div>
-									<p class="text-sm font-medium text-gray-700">Lease Term</p>
-									<p class="text-sm text-gray-900">{lease.startDate} - {lease.endDate}</p>
-								</div>
-
-								<div class="border-t border-gray-200 pt-4">
-									<p class="text-sm text-gray-600">
-										This lease agreement includes standard terms and conditions for the rental
-										property.
-									</p>
-								</div>
+							<div>
+								<p class="text-sm font-medium text-gray-700">Lease Term</p>
+								<p class="text-sm text-gray-900">{lease.startDate} - {lease.endDate}</p>
 							</div>
 						</div>
 					</HoverModal>
