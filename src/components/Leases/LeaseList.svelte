@@ -18,8 +18,6 @@
 		grid
 	} from '../Icons/icons';
 
-	let showJsonModal = false;
-
 	export let leases: LeaseAgreement[];
 	export let clients: Client[];
 	export let properties: Property[];
@@ -304,10 +302,10 @@
 
 	<SearchFilter
 		{searchTerm}
-		onSearchChange={(term) => (searchTerm = term)}
+		onSearchChange={(term: string) => (searchTerm = term)}
 		{filterOptions}
 		{filterValue}
-		onFilterChange={(value) => (filterValue = value)}
+		onFilterChange={(value: string) => (filterValue = value)}
 		placeholder="Search leases by client name or property address..."
 	/>
 

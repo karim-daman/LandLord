@@ -26,9 +26,18 @@ export interface Property {
 	deposit: number;
 	amenities: string[];
 	description: string;
+	images: PropertyImage[]; // Added images array
 	isAvailable: boolean;
 	createdAt: string;
 	updatedAt: string;
+}
+
+export interface PropertyImage {
+	id: string;
+	filename: string;
+	path: string;
+	caption?: string;
+	uploadedAt: string;
 }
 
 export interface LeaseAgreement {

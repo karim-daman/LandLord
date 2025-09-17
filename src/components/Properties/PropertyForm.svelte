@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { generateId } from '../../utils/helpers';
-	import type { Property } from '../../types';
+	import { saveMultiplePropertyImages, deletePropertyImage } from '$lib/stores';
+	import type { Property, PropertyImage } from '../../types';
 
 	export let property: Property | undefined;
 	export let onSave: (property: Property) => void;
@@ -31,6 +32,7 @@
 		city: '',
 		state: '',
 		zipCode: '',
+		images: [] as PropertyImage[], // Add images field
 		propertyType: 'apartment' as Property['propertyType'],
 		bedrooms: 1,
 		bathrooms: 1,
@@ -43,6 +45,8 @@
 	};
 
 	let errors: Partial<Record<keyof typeof formData, string>> = {};
+	let uploadingImages = false;
+	let imageUploadError = '';
 
 	$: {
 		if (property) {
@@ -51,6 +55,7 @@
 				city: property.city,
 				state: property.state,
 				zipCode: property.zipCode,
+				images: property.images || [],
 				propertyType: property.propertyType,
 				bedrooms: property.bedrooms,
 				bathrooms: property.bathrooms,
@@ -81,20 +86,70 @@
 		return Object.keys(newErrors).length === 0;
 	}
 
-	function handleSubmit(e: Event) {
+	async function handleSubmit(e: Event) {
 		e.preventDefault();
 
 		if (!validateForm()) return;
 
 		const now = new Date().toISOString();
+		const propertyId = property?.id || generateId();
+
 		const propertyData: Property = {
-			id: property?.id || generateId(),
+			id: propertyId,
 			...formData,
 			createdAt: property?.createdAt || now,
 			updatedAt: now
 		};
 
 		onSave(propertyData);
+	}
+
+	async function handleImageUpload(e: Event) {
+		const files = (e.target as HTMLInputElement).files;
+		if (!files || files.length === 0) return;
+
+		uploadingImages = true;
+		imageUploadError = '';
+
+		try {
+			// Generate property ID if this is a new property
+			const propertyId = property?.id || generateId();
+
+			// Save images to local storage
+			const savedImages = await saveMultiplePropertyImages(files, propertyId);
+
+			if (savedImages.length > 0) {
+				formData = {
+					...formData,
+					images: [...formData.images, ...savedImages]
+				};
+				console.log(`Successfully uploaded ${savedImages.length} images`);
+			} else {
+				imageUploadError = 'No images were successfully uploaded';
+			}
+		} catch (error) {
+			console.error('Error uploading images:', error);
+			imageUploadError = 'Failed to upload images. Please try again.';
+		} finally {
+			uploadingImages = false;
+			// Clear the input
+			(e.target as HTMLInputElement).value = '';
+		}
+	}
+
+	async function handleRemoveImage(imageToRemove: PropertyImage) {
+		try {
+			// Remove from local storage
+			await deletePropertyImage(imageToRemove.path);
+
+			// Remove from form data
+			formData = {
+				...formData,
+				images: formData.images.filter((img) => img.id !== imageToRemove.id)
+			};
+		} catch (error) {
+			console.error('Error removing image:', error);
+		}
 	}
 
 	function handleChange(field: keyof typeof formData) {
@@ -308,17 +363,56 @@
 			</textarea>
 		</div>
 
-		<!-- <div class="md:col-span-2">
-			<label class="flex items-center space-x-2">
-				<input
-					type="checkbox"
-					bind:checked={formData.isAvailable}
-					on:change={handleChange('isAvailable')}
-					class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-				/>
-				<span class="text-xs font-medium text-gray-700">Available for Rent</span>
+		<div class="md:col-span-2">
+			<label for="images" class="mb-2 block text-xs font-medium text-gray-700">
+				Property Images
 			</label>
-		</div> -->
+
+			<input
+				type="file"
+				multiple
+				accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+				on:change={handleImageUpload}
+				disabled={uploadingImages}
+				class={`w-full rounded-lg border border-gray-300 px-3 py-2 ${
+					uploadingImages ? 'cursor-not-allowed opacity-50' : ''
+				}`}
+			/>
+
+			{#if uploadingImages}
+				<p class="mt-2 text-xs text-blue-600">Uploading images...</p>
+			{/if}
+
+			{#if imageUploadError}
+				<p class="mt-2 text-xs text-red-500">{imageUploadError}</p>
+			{/if}
+
+			{#if formData.images.length > 0}
+				<div class="mt-4 space-y-2">
+					<p class="text-xs font-medium text-gray-700">
+						Uploaded Images ({formData.images.length}):
+					</p>
+					<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+						{#each formData.images as img (img.id)}
+							<div class="relative rounded border border-gray-200 bg-gray-50 p-2">
+								<div class="truncate text-xs text-gray-600">{img.filename}</div>
+								<div class="text-xs text-gray-400">
+									{new Date(img.uploadedAt).toLocaleDateString()}
+								</div>
+								<button
+									type="button"
+									on:click={() => handleRemoveImage(img)}
+									class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
+									title="Remove image"
+								>
+									×
+								</button>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+		</div>
 	</div>
 
 	<div class="flex justify-end space-x-3 border-t border-gray-200 pt-6">
@@ -331,7 +425,10 @@
 		</button>
 		<button
 			type="submit"
-			class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+			disabled={uploadingImages}
+			class={`rounded-lg px-4 py-2 text-white transition-colors ${
+				uploadingImages ? 'cursor-not-allowed bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+			}`}
 		>
 			{property ? 'Update Property' : 'Create Property'}
 		</button>

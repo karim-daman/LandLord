@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { initializeAllStores, clients, properties, leaseAgreement as leases } from '$lib/stores';
-	import toast, { Toaster } from 'svelte-5-french-toast';
+
+	import toast from 'svelte-5-french-toast';
 	import { onMount } from 'svelte';
+
+	import Header from '../components/Layout/Header.svelte';
+	import Dashboard from '../components/Dashboard/Dashboard.svelte';
+	import ClientList from '../components/Clients/ClientList.svelte';
+	import PropertyList from '../components/Properties/PropertyList.svelte';
+	import LeaseList from '../components/Leases/LeaseList.svelte';
+	import type { Client, Property, LeaseAgreement } from '../types';
 
 	onMount(async () => {
 		toast.promise(
@@ -38,13 +46,6 @@
 			}
 		);
 	});
-
-	import Header from '../components/Layout/Header.svelte';
-	import Dashboard from '../components/Dashboard/Dashboard.svelte';
-	import ClientList from '../components/Clients/ClientList.svelte';
-	import PropertyList from '../components/Properties/PropertyList.svelte';
-	import LeaseList from '../components/Leases/LeaseList.svelte';
-	import type { Client, Property, LeaseAgreement } from '../types';
 
 	let activeTab = 'dashboard';
 
