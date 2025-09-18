@@ -6,7 +6,7 @@
 
 	import Header from '../components/Layout/Header.svelte';
 	import Dashboard from '../components/Dashboard/Dashboard.svelte';
-	import ClientList from '../components/Clients/ClientList.svelte';
+	import TenantList from '../components/Tenants/TenantList.svelte';
 	import PropertyList from '../components/Properties/PropertyList.svelte';
 	import LeaseList from '../components/Leases/LeaseList.svelte';
 	import type { Tenant, Property, LeaseAgreement } from '../types';
@@ -78,7 +78,7 @@
 		tenants.update((prev) => prev.filter((tenant) => tenant.id !== tenantId));
 		// Also remove any leases associated with this tenant
 		leases.update((prev) => {
-			const tenantLeases = prev.filter((lease) => lease.clientId === tenantId);
+			const tenantLeases = prev.filter((lease) => lease.tenantId === tenantId);
 
 			// Make units available again when tenant is deleted
 			if (tenantLeases.length > 0) {
@@ -95,7 +95,7 @@
 				);
 			}
 
-			return prev.filter((lease) => lease.clientId !== tenantId);
+			return prev.filter((lease) => lease.tenantId !== tenantId);
 		});
 
 		toast.success('Deleted Tenant', {
@@ -229,12 +229,12 @@
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 		{#if activeTab === 'dashboard'}
 			<Dashboard tenants={$tenants} properties={$properties} leases={$leases} />
-		{:else if activeTab === 'clients'}
-			<ClientList
-				clients={$tenants}
-				onCreateClient={handleCreateTenant}
-				onUpdateClient={handleUpdateTenant}
-				onDeleteClient={handleDeleteTenant}
+		{:else if activeTab === 'tenants'}
+			<TenantList
+				tenants={$tenants}
+				onCreateTenant={handleCreateTenant}
+				onUpdateTenant={handleUpdateTenant}
+				onDeleteTenant={handleDeleteTenant}
 			/>
 		{:else if activeTab === 'properties'}
 			<PropertyList

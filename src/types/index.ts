@@ -55,7 +55,7 @@ export interface PropertyImage {
 
 export interface LeaseAgreement {
 	id: string;
-	clientId: string;
+	tenantId: string;
 	propertyId: string;
 	unitId?: string;
 	startDate: string;

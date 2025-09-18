@@ -5,18 +5,7 @@
 	import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
 	import type { LeaseAgreement, Tenant, Property } from '../../types';
 	import HoverModal from '../Common/HoverModal.svelte';
-	import {
-		calendarClock,
-		calendar2,
-		edit,
-		eye,
-		home2,
-		plus,
-		trash,
-		user,
-		fadingClock,
-		grid
-	} from '../Icons/icons';
+	import { calendarClock, calendar2, edit, eye, home2, plus, trash, user } from '../Icons/icons';
 
 	export let leases: LeaseAgreement[];
 	export let tenants: Tenant[];
@@ -39,23 +28,29 @@
 		{ value: 'terminated', label: 'Terminated' }
 	];
 
-	// Reactive declarations to find the client and property for the selected lease
-	$: selectedClient = selectedLease
-		? tenants.find((c) => c.id === selectedLease?.clientId)
+	// Reactive declarations to find the tenant and property for the selected lease
+	$: selectedTenant = selectedLease
+		? tenants.find((c) => c.id === selectedLease?.tenantId)
 		: undefined;
 	$: selectedProperty = selectedLease
 		? properties.find((p) => p.id === selectedLease?.propertyId)
 		: undefined;
 
-	// Added a check to ensure `leases` is an array before calling `.filter()`
+	// Use reactive statement to find the filtered leases
+	// This will automatically re-run whenever leases, tenants, properties, or searchTerm/filterValue changes
 	$: {
-		filteredLeases = (Array.isArray(leases) ? leases : []).filter((lease) => {
-			const client = tenants.find((c) => c.id === lease.clientId);
-			const property = properties.find((p) => p.id === lease.propertyId);
+		// Ensure leases, tenants, and properties are valid arrays before filtering
+		const validLeases = Array.isArray(leases) ? leases : [];
+		const validTenants = Array.isArray(tenants) ? tenants : [];
+		const validProperties = Array.isArray(properties) ? properties : [];
+
+		filteredLeases = validLeases.filter((lease) => {
+			const tenant = validTenants.find((c) => c.id === lease.tenantId);
+			const property = validProperties.find((p) => p.id === lease.propertyId);
 
 			const matchesSearch =
-				(client &&
-					`${client.firstName} ${client.lastName}`
+				(tenant &&
+					`${tenant.firstName} ${tenant.lastName}`
 						.toLowerCase()
 						.includes(searchTerm.toLowerCase())) ||
 				(property && property.address.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -126,7 +121,7 @@
 	 * @param endDate The lease's end date (ISO format or Date-parsable string)
 	 * @returns true if the lease expires within 1-30 days from today
 	 */
-	function isExpiringSoon(endDate: string, lease: any): boolean {
+	function isExpiringSoon(endDate: string, lease: LeaseAgreement): boolean {
 		console.log(lease);
 
 		const today = new Date();
@@ -265,10 +260,16 @@
 		selectedLease = undefined;
 	}
 
-	// Helper function to get client name
-	function getClientName(clientId: string): string {
-		const client = tenants.find((c) => c.id === clientId);
-		return client ? `${client.firstName} ${client.lastName}` : 'Unknown Client';
+	// Helper function to get tenant name
+	function getTenantName(tenantId: string): string {
+		// Ensure `tenants` is a valid array before attempting to find an element.
+		if (!Array.isArray(tenants)) {
+			console.error('`tenants` prop is not an array.');
+			return 'Unknown Tenant';
+		}
+
+		const tenant = tenants.find((c) => c.id === tenantId);
+		return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Unknown Tenant';
 	}
 
 	// Helper function to get property address
@@ -306,7 +307,7 @@
 		{filterOptions}
 		{filterValue}
 		onFilterChange={(value: string) => (filterValue = value)}
-		placeholder="Search leases by client name or property address..."
+		placeholder="Search leases by tenants name or property address..."
 	/>
 
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
@@ -362,7 +363,7 @@
 							<div class="mb-2 flex items-center text-gray-900">
 								{@html user}
 								<span class="">
-									Tenant: {getClientName(lease.clientId)}
+									Tenant: {getTenantName(lease.tenantId)}
 								</span>
 							</div>
 
@@ -383,7 +384,6 @@
 
 								<span class="w-[30%]">
 									<div class="flex items-center justify-between">
-										<!-- <p class="mb-0.5 text-xs text-black">Lease Progress</p> -->
 										<span class="text-xs font-semibold text-gray-900">
 											{calculateLeaseProgress(lease.startDate, lease.endDate)}%
 										</span>
@@ -409,7 +409,6 @@
 
 								<span class="w-[30%]" class:text-red-600={getDisplayStatus(lease) === 'Expired'}>
 									<div class="flex items-center border-gray-300 text-xs text-black">
-										<!-- {@html fadingClock} -->
 										<span
 											class={remainingDuration(lease.endDate) === 'Expired'
 												? 'text-red-600'
@@ -483,7 +482,6 @@
 		</div>
 	{/if}
 
-	<!-- Create/Edit Modal -->
 	<Modal
 		isOpen={showForm}
 		onClose={() => {
@@ -505,7 +503,6 @@
 		/>
 	</Modal>
 
-	<!-- Details Modal -->
 	<Modal
 		isOpen={showDetails}
 		onClose={() => {
@@ -519,15 +516,15 @@
 			<div class="space-y-6 p-6">
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
-						<label for="lastName" class="mb-1 block text-xs font-medium text-gray-700">Client</label
+						<label for="lastName" class="mb-1 block text-xs font-medium text-gray-700">Tenant</label
 						>
 						<p class="text-xs text-gray-900">
-							{selectedClient
-								? `${selectedClient.firstName} ${selectedClient.lastName}`
-								: 'Unknown Client'}
+							{selectedTenant
+								? `${selectedTenant.firstName} ${selectedTenant.lastName}`
+								: 'Unknown Tenant'}
 						</p>
-						{#if selectedClient}
-							<p class="mt-1 text-xs text-gray-600">{selectedClient.email}</p>
+						{#if selectedTenant}
+							<p class="mt-1 text-xs text-gray-600">{selectedTenant.email}</p>
 						{/if}
 					</div>
 					<div>
@@ -615,7 +612,6 @@
 		{/if}
 	</Modal>
 
-	<!-- Delete Confirmation Modal -->
 	<Modal
 		isOpen={showDeleteConfirm}
 		onClose={() => {

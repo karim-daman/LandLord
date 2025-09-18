@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { generateId, validateEmail, validatePhone } from '../../utils/helpers';
-	import type { Client } from '../../types';
+	import type { Tenant } from '../../types';
 
-	export let client: Client | undefined;
-	export let onSave: (client: Client) => void;
+	export let tenant: Tenant | undefined;
+	export let onSave: (tenant: Tenant) => void;
 	export let onCancel: () => void;
 
 	let formData = {
@@ -20,16 +20,16 @@
 	let errors: Partial<typeof formData> = {};
 
 	$: {
-		if (client) {
+		if (tenant) {
 			formData = {
-				firstName: client.firstName,
-				lastName: client.lastName,
-				email: client.email,
-				phone: client.phone,
-				address: client.address,
-				dateOfBirth: client.dateOfBirth,
-				emergencyContact: client.emergencyContact,
-				emergencyPhone: client.emergencyPhone
+				firstName: tenant.firstName,
+				lastName: tenant.lastName,
+				email: tenant.email,
+				phone: tenant.phone,
+				address: tenant.address,
+				dateOfBirth: tenant.dateOfBirth,
+				emergencyContact: tenant.emergencyContact,
+				emergencyPhone: tenant.emergencyPhone
 			};
 		}
 	}
@@ -55,14 +55,14 @@
 		if (!validateForm()) return;
 
 		const now = new Date().toISOString();
-		const clientData: Client = {
-			id: client?.id || generateId(),
+		const tenantData: Tenant = {
+			id: tenant?.id || generateId(),
 			...formData,
-			createdAt: client?.createdAt || now,
+			createdAt: tenant?.createdAt || now,
 			updatedAt: now
 		};
 
-		onSave(clientData);
+		onSave(tenantData);
 	}
 
 	function handleChange(field: keyof typeof formData) {
@@ -202,7 +202,7 @@
 			type="submit"
 			class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
 		>
-			{client ? 'Update Client' : 'Create Client'}
+			{tenant ? 'Update Tenant' : 'Create Tenant'}
 		</button>
 	</div>
 </form>

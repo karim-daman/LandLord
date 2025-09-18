@@ -9,7 +9,7 @@
 
 	const tabs = [
 		{ id: 'dashboard', label: 'Dashboard', icon: chart },
-		{ id: 'clients', label: 'Clients', icon: users },
+		{ id: 'tenants', label: 'Tenants', icon: users },
 		{ id: 'properties', label: 'Properties', icon: building2 },
 		{ id: 'leases', label: 'Agreements', icon: fileText }
 	];

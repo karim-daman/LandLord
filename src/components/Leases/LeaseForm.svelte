@@ -16,7 +16,7 @@
 	] as const;
 
 	let formData = {
-		clientId: '',
+		tenantId: '',
 		propertyId: '',
 		unitId: '',
 		startDate: '',
@@ -35,7 +35,7 @@
 	$: {
 		if (lease) {
 			formData = {
-				clientId: lease.clientId,
+				tenantId: lease.tenantId,
 				propertyId: lease.propertyId,
 				unitId: lease.unitId || '',
 				startDate: lease.startDate,
@@ -105,7 +105,7 @@
 	function validateForm(): boolean {
 		const newErrors: Partial<Record<keyof typeof formData, string>> = {};
 
-		if (!formData.clientId) newErrors.clientId = 'Tenant is required';
+		if (!formData.tenantId) newErrors.tenantId = 'Tenant is required';
 		if (!formData.propertyId) newErrors.propertyId = 'Property is required';
 		if (!formData.unitId) newErrors.unitId = 'Unit is required';
 		if (!formData.startDate) newErrors.startDate = 'Start date is required';
@@ -184,10 +184,10 @@
 			<label for="clientId" class="mb-2 block text-xs font-medium text-gray-700"> Tenant * </label>
 			<select
 				id="clientId"
-				bind:value={formData.clientId}
+				bind:value={formData.tenantId}
 				on:change={handleChange}
 				class={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
-					errors.clientId ? 'border-red-300' : 'border-gray-300'
+					errors.tenantId ? 'border-red-300' : 'border-gray-300'
 				}`}
 			>
 				<option value="">Select a tenant</option>
@@ -198,7 +198,7 @@
 					</option>
 				{/each}
 			</select>
-			{#if errors.clientId}<p class="mt-1 text-xs text-red-500">{errors.clientId}</p>{/if}
+			{#if errors.tenantId}<p class="mt-1 text-xs text-red-500">{errors.tenantId}</p>{/if}
 		</div>
 
 		<div>
