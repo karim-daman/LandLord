@@ -12,11 +12,11 @@ import {
 	readFile,
 	writeFile
 } from '@tauri-apps/plugin-fs';
-import type { Client, Property, LeaseAgreement, PropertyImage } from '../types';
+import type { Tenant, Property, LeaseAgreement, PropertyImage } from '../types';
 
-export const clients = writable<Client[]>([]);
+export const tenants = writable<Tenant[]>([]);
 export const properties = writable<Property[]>([]);
-export const leaseAgreement = writable<LeaseAgreement[]>([]);
+export const leaseAgreements = writable<LeaseAgreement[]>([]);
 
 async function saveToFile(data: any, filename: string) {
 	if (!data) return;
@@ -198,9 +198,9 @@ export async function initializeAllStores(): Promise<{ success: boolean; message
 	try {
 		await ensureDataFolder(); // Only call once
 		await Promise.all([
-			initializeClientsStore(),
+			initializeTenantsStore(),
 			initializePropertiesStore(),
-			initializeLeaseAgreementStore()
+			initializeLeaseAgreementsStore()
 		]);
 
 		return { success: true, message: 'All stores initialized successfully.' };
@@ -228,7 +228,7 @@ async function ensureDataFolder() {
 		await mkdir('LandLord/images', { baseDir: BaseDirectory.Desktop });
 	}
 
-	const files = ['Clients.txt', 'Properties.txt', 'LeaseAgreement.txt'];
+	const files = ['Tenants.txt', 'Properties.txt', 'LeaseAgreements.txt'];
 
 	await Promise.all(
 		files.map(async (file) => {
@@ -240,16 +240,16 @@ async function ensureDataFolder() {
 	);
 }
 
-export async function initializeClientsStore() {
-	await initializeStore(clients, 'clients', (data: Client[]) => clients.set(data));
+export async function initializeTenantsStore() {
+	await initializeStore(tenants, 'tenants', (data: Tenant[]) => tenants.set(data));
 }
 
 export async function initializePropertiesStore() {
 	await initializeStore(properties, 'properties', (data: Property[]) => properties.set(data));
 }
 
-export async function initializeLeaseAgreementStore() {
-	await initializeStore(leaseAgreement, 'leaseAgreement', (data: LeaseAgreement[]) =>
-		leaseAgreement.set(data)
+export async function initializeLeaseAgreementsStore() {
+	await initializeStore(leaseAgreements, 'leaseAgreements', (data: LeaseAgreement[]) =>
+		leaseAgreements.set(data)
 	);
 }

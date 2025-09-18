@@ -3,7 +3,7 @@
 	import Modal from '../Common/Modal.svelte';
 	import LeaseForm from './LeaseForm.svelte';
 	import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
-	import type { LeaseAgreement, Client, Property } from '../../types';
+	import type { LeaseAgreement, Tenant, Property } from '../../types';
 	import HoverModal from '../Common/HoverModal.svelte';
 	import {
 		calendarClock,
@@ -19,7 +19,7 @@
 	} from '../Icons/icons';
 
 	export let leases: LeaseAgreement[];
-	export let clients: Client[];
+	export let tenants: Tenant[];
 	export let properties: Property[];
 	export let onCreateLease: (lease: LeaseAgreement) => void;
 	export let onUpdateLease: (lease: LeaseAgreement) => void;
@@ -41,7 +41,7 @@
 
 	// Reactive declarations to find the client and property for the selected lease
 	$: selectedClient = selectedLease
-		? clients.find((c) => c.id === selectedLease?.clientId)
+		? tenants.find((c) => c.id === selectedLease?.clientId)
 		: undefined;
 	$: selectedProperty = selectedLease
 		? properties.find((p) => p.id === selectedLease?.propertyId)
@@ -50,7 +50,7 @@
 	// Added a check to ensure `leases` is an array before calling `.filter()`
 	$: {
 		filteredLeases = (Array.isArray(leases) ? leases : []).filter((lease) => {
-			const client = clients.find((c) => c.id === lease.clientId);
+			const client = tenants.find((c) => c.id === lease.clientId);
 			const property = properties.find((p) => p.id === lease.propertyId);
 
 			const matchesSearch =
@@ -267,7 +267,7 @@
 
 	// Helper function to get client name
 	function getClientName(clientId: string): string {
-		const client = clients.find((c) => c.id === clientId);
+		const client = tenants.find((c) => c.id === clientId);
 		return client ? `${client.firstName} ${client.lastName}` : 'Unknown Client';
 	}
 
@@ -422,41 +422,6 @@
 							</div>
 						</div>
 					</div>
-
-					<!-- <div
-						class="mt-4 flex items-center justify-between gap-4 rounded-sm border border-gray-100 p-1 px-2
-							{remainingDuration(lease.endDate) === 'Expired' ? 'bg-red-100' : 'bg-green-100'} "
-					>
-						<div class="max-w-[50%] flex-1">
-							<div class="flex items-center justify-between">
-								<p class="mb-0.5 text-xs text-black">Lease Progress</p>
-								<span class="text-xs font-semibold text-gray-900">
-									{calculateLeaseProgress(lease.startDate, lease.endDate)}%
-								</span>
-							</div>
-
-							<div class="h-2 w-full rounded-full bg-gray-200">
-								<div
-									class="h-full rounded-full transition-all duration-300 ease-in-out {getProgressColor(
-										calculateLeaseProgress(lease.startDate, lease.endDate),
-										getDisplayStatus(lease) === 'expired'
-									)}"
-									style="width: {calculateLeaseProgress(lease.startDate, lease.endDate)}%"
-								></div>
-							</div>
-						</div>
-
-						<div class="flex items-center border-gray-300 text-xs text-black">
-							{@html fadingClock}
-							<span
-								class={remainingDuration(lease.endDate) === 'Expired'
-									? 'text-red-600'
-									: 'text-gray-600'}
-							>
-								{remainingDuration(lease.endDate)}
-							</span>
-						</div>
-					</div> -->
 				</div>
 
 				<div class="flex items-center justify-between border-t border-gray-100 p-4 pt-3">
@@ -530,7 +495,7 @@
 	>
 		<LeaseForm
 			lease={selectedLease}
-			{clients}
+			{tenants}
 			{properties}
 			onSave={handleSave}
 			onCancel={() => {

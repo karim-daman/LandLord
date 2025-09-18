@@ -1,4 +1,4 @@
-export interface Client {
+export interface Tenant {
 	id: string;
 	firstName: string;
 	lastName: string;
@@ -18,15 +18,28 @@ export interface Property {
 	city: string;
 	state: string;
 	zipCode: string;
-	propertyType: 'apartment' | 'house' | 'garage' | 'commercial';
+	propertyType: 'complex' | 'house' | 'apartment' | 'commercial';
+	name?: string; // e.g., "The Grand Apartments" or "The Willow Creek Mall"
+	description: string;
+	isAvailable: boolean;
+	images: PropertyImage[];
+	createdAt: string;
+	updatedAt: string;
+	units: Unit[];
+	leases: LeaseAgreement[]; // Added to track all leases associated with the property
+}
+
+export interface Unit {
+	id: string;
+	unitNumber: string; // e.g., "1A", "Unit 203"
 	bedrooms: number;
 	bathrooms: number;
 	squareFeet: number;
 	monthlyRent: number;
 	deposit: number;
-	amenities: string[];
 	description: string;
-	images: PropertyImage[]; // Added images array
+	amenities: string[];
+	images: PropertyImage[];
 	isAvailable: boolean;
 	createdAt: string;
 	updatedAt: string;
@@ -44,6 +57,7 @@ export interface LeaseAgreement {
 	id: string;
 	clientId: string;
 	propertyId: string;
+	unitId?: string;
 	startDate: string;
 	endDate: string;
 	monthlyRent: number;
@@ -56,4 +70,4 @@ export interface LeaseAgreement {
 	updatedAt: string;
 }
 
-export type EntityType = 'clients' | 'properties' | 'leases';
+export type EntityType = 'tenants' | 'properties' | 'leases';

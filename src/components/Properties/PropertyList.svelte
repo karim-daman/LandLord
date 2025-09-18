@@ -7,7 +7,7 @@
 	import type { Property } from '../../types';
 	import { onMount } from 'svelte';
 
-	import { eye, edit, mappin, trash, home, dollarsign, plus } from '../Icons/icons';
+	import { eye, edit, mappin, trash, home, dollarsign, plus, building2 } from '../Icons/icons';
 
 	export let properties: Property[];
 	export let onCreateProperty: (property: Property) => void;
@@ -25,20 +25,20 @@
 	let cardImageIndexes: { [key: string]: number } = {};
 
 	const filterOptions = [
-		{ value: 'apartment', label: 'Apartment' },
+		{ value: 'complex', label: 'Complex' },
 		{ value: 'house', label: 'House' },
-		{ value: 'condo', label: 'Condo' },
-		{ value: 'townhouse', label: 'Townhouse' },
+		{ value: 'apartment', label: 'Apartment' },
 		{ value: 'commercial', label: 'Commercial' }
 	];
 
-	// The fix is here: we check if properties is an array before trying to filter it.
+	// Filter properties based on search and filter criteria
 	$: filteredProperties = Array.isArray(properties)
 		? properties.filter((property) => {
 				const matchesSearch =
 					property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
 					property.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					property.state.toLowerCase().includes(searchTerm.toLowerCase());
+					property.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					(property.name && property.name.toLowerCase().includes(searchTerm.toLowerCase()));
 				const matchesFilter = !filterValue || property.propertyType === filterValue;
 				return matchesSearch && matchesFilter;
 			})
@@ -180,6 +180,27 @@
 		showDetails = false;
 		selectedProperty = undefined;
 	}
+
+	function getAvailableUnitsCount(property: Property): number {
+		return property.units ? property.units.filter((unit) => unit.isAvailable).length : 0;
+	}
+
+	function getTotalUnitsCount(property: Property): number {
+		return property.units ? property.units.length : 0;
+	}
+
+	function getPropertyRentRange(property: Property): string {
+		if (!property.units || property.units.length === 0) return '$0';
+
+		const rents = property.units.map((unit) => unit.monthlyRent);
+		const minRent = Math.min(...rents);
+		const maxRent = Math.max(...rents);
+
+		if (minRent === maxRent) {
+			return formatCurrency(minRent);
+		}
+		return `${formatCurrency(minRent)} - ${formatCurrency(maxRent)}`;
+	}
 </script>
 
 <div>
@@ -201,7 +222,7 @@
 		{filterOptions}
 		bind:filterValue
 		onFilterChange={(value) => (filterValue = value)}
-		placeholder="Search properties by address, city, or state..."
+		placeholder="Search properties by address, city, state, or name..."
 	/>
 
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -209,7 +230,6 @@
 			<div
 				class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
 			>
-				<!-- Image Carousel Section -->
 				{#if property.images && property.images.length > 0}
 					<div class="relative h-48 bg-gray-200">
 						{#if property.images[cardImageIndexes[property.id] || 0] && imageDataUrls[property.images[cardImageIndexes[property.id] || 0].id]}
@@ -230,7 +250,6 @@
 							</div>
 						{/if}
 
-						<!-- Navigation Arrows (only show if more than 1 image) -->
 						{#if property.images.length > 1}
 							<button
 								on:click={() => previousImage(property.id, property.images.length)}
@@ -261,7 +280,6 @@
 								</svg>
 							</button>
 
-							<!-- Dot Indicators -->
 							<div class="absolute bottom-2 left-1/2 flex -translate-x-1/2 space-x-1">
 								{#each property.images as _, index}
 									<button
@@ -276,7 +294,6 @@
 								{/each}
 							</div>
 
-							<!-- Image Counter -->
 							<div
 								class="absolute top-2 right-2 rounded-full bg-black/50 px-2 py-1 text-xs text-white"
 							>
@@ -285,10 +302,9 @@
 						{/if}
 					</div>
 				{:else}
-					<!-- Placeholder when no images -->
 					<div class="flex h-48 items-center justify-center bg-gray-200">
 						<div class="text-center text-gray-500">
-							{@html home}
+							{@html building2}
 							<div class="mt-2 text-xs">No images</div>
 						</div>
 					</div>
@@ -300,12 +316,12 @@
 							<div class="mb-2 flex items-center space-x-2">
 								<span
 									class={`rounded-full px-2 py-1 text-xs font-medium ${
-										property.isAvailable
+										getAvailableUnitsCount(property) > 0
 											? 'border border-green-200 bg-green-100 text-green-800'
 											: 'border border-red-200 bg-red-100 text-red-800'
 									}`}
 								>
-									{property.isAvailable ? 'Available' : 'Occupied'}
+									{getAvailableUnitsCount(property)}/{getTotalUnitsCount(property)} Available
 								</span>
 								<span
 									class="rounded-full border border-gray-200 bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 capitalize"
@@ -314,8 +330,11 @@
 								</span>
 							</div>
 							<h3 class="line-clamp-2 text-lg font-semibold text-gray-900">
-								{property.address}
+								{property.name || property.address}
 							</h3>
+							{#if property.name}
+								<p class="text-xs text-gray-600">{property.address}</p>
+							{/if}
 						</div>
 						<div class="ml-2 flex space-x-2">
 							<button
@@ -348,31 +367,18 @@
 							<span class="truncate">{property.city}, {property.state} {property.zipCode}</span>
 						</div>
 						<div class="flex items-center text-xs text-gray-600">
-							{@html home}
-							<span
-								>{property.bedrooms} bed, {property.bathrooms} bath • {property.squareFeet} sq ft</span
-							>
+							{@html building2}
+							<span>{getTotalUnitsCount(property)} units total</span>
 						</div>
 						<div class="flex items-center text-xs font-medium text-gray-900">
 							{@html dollarsign}
-							<span>{formatCurrency(property.monthlyRent)}/month</span>
+							<span>{getPropertyRentRange(property)}/month</span>
 						</div>
 					</div>
 
-					{#if property.amenities.length > 0}
+					{#if property.description}
 						<div class="mt-4">
-							<div class="flex flex-wrap gap-1">
-								{#each property.amenities.slice(0, 3) as amenity (amenity)}
-									<span class="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">
-										{amenity}
-									</span>
-								{/each}
-								{#if property.amenities.length > 3}
-									<span class="rounded bg-gray-50 px-2 py-1 text-xs text-gray-600">
-										+{property.amenities.length - 3} more
-									</span>
-								{/if}
-							</div>
+							<p class="line-clamp-2 text-xs text-gray-600">{property.description}</p>
 						</div>
 					{/if}
 				</div>
@@ -397,7 +403,6 @@
 		</div>
 	{/if}
 
-	<!-- Create/Edit Modal -->
 	<Modal
 		isOpen={showForm}
 		onClose={() => {
@@ -417,90 +422,169 @@
 		/>
 	</Modal>
 
-	<!-- Details Modal -->
 	<Modal
 		isOpen={showDetails}
 		onClose={closeDetailsModal}
 		title="Property Details"
-		maxWidth="max-w-4xl"
+		maxWidth="max-w-6xl"
 	>
 		{#if selectedProperty}
 			<div class="space-y-6 p-6">
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div class="md:col-span-2">
-						<label for="address" class="mb-1 block text-xs font-medium text-gray-700">Address</label
+						<label for="property-name" class="mb-1 block text-xs font-medium text-gray-700"
+							>Property Name</label
 						>
-						<p class="text-xs text-gray-900">{selectedProperty.address}</p>
+						<input
+							id="property-name"
+							class="text-sm text-gray-900"
+							value={selectedProperty.name || 'N/A'}
+							readonly
+						/>
+					</div>
+					<div class="md:col-span-2">
+						<label for="property-address" class="mb-1 block text-xs font-medium text-gray-700"
+							>Address</label
+						>
+						<p id="property-address" class="text-sm text-gray-900">{selectedProperty.address}</p>
 					</div>
 					<div>
-						<label for="city" class="mb-1 block text-xs font-medium text-gray-700">City</label>
-						<p class="text-xs text-gray-900">{selectedProperty.city}</p>
+						<label for="property-city" class="mb-1 block text-xs font-medium text-gray-700"
+							>City</label
+						>
+						<p id="property-city" class="text-sm text-gray-900">{selectedProperty.city}</p>
 					</div>
 					<div>
-						<label for="state" class="mb-1 block text-xs font-medium text-gray-700">State</label>
-						<p class="text-xs text-gray-900">{selectedProperty.state}</p>
+						<label for="property-state" class="mb-1 block text-xs font-medium text-gray-700"
+							>State</label
+						>
+						<p id="property-state" class="text-sm text-gray-900">{selectedProperty.state}</p>
 					</div>
 					<div>
-						<label for="zipCode" class="mb-1 block text-xs font-medium text-gray-700"
+						<label for="property-zip" class="mb-1 block text-xs font-medium text-gray-700"
 							>ZIP Code</label
 						>
-						<p class="text-xs text-gray-900">{selectedProperty.zipCode}</p>
+						<p id="property-zip" class="text-sm text-gray-900">{selectedProperty.zipCode}</p>
 					</div>
 					<div>
-						<label for="Type" class="mb-1 block text-xs font-medium text-gray-700"
+						<label for="property-type" class="mb-1 block text-xs font-medium text-gray-700"
 							>Property Type</label
 						>
-						<p class="text-xs text-gray-900 capitalize">{selectedProperty.propertyType}</p>
-					</div>
-					<div>
-						<label for="Bedrooms" class="mb-1 block text-xs font-medium text-gray-700"
-							>Bedrooms</label
-						>
-						<p class="text-xs text-gray-900">{selectedProperty.bedrooms}</p>
-					</div>
-					<div>
-						<label for="bathrooms" class="mb-1 block text-xs font-medium text-gray-700"
-							>Bathrooms</label
-						>
-						<p class="text-xs text-gray-900">{selectedProperty.bathrooms}</p>
-					</div>
-					<div>
-						<label for="area" class="mb-1 block text-xs font-medium text-gray-700"
-							>Square Feet</label
-						>
-						<p class="text-xs text-gray-900">{selectedProperty.squareFeet.toLocaleString()}</p>
-					</div>
-					<div>
-						<label for="rentAmount" class="mb-1 block text-xs font-medium text-gray-700"
-							>Monthly Rent</label
-						>
-						<p class="text-xs text-gray-900">{formatCurrency(selectedProperty.monthlyRent)}</p>
-					</div>
-					<div>
-						<label for="deposit" class="mb-1 block text-xs font-medium text-gray-700"
-							>Security Deposit</label
-						>
-						<p class="text-xs text-gray-900">{formatCurrency(selectedProperty.deposit)}</p>
-					</div>
-					<div>
-						<label for="Availability" class="mb-1 block text-xs font-medium text-gray-700"
-							>Availability</label
-						>
-						<p class="text-xs text-gray-900">
-							{selectedProperty.isAvailable ? 'Available' : 'Occupied'}
+						<p id="property-type" class="text-sm text-gray-900 capitalize">
+							{selectedProperty.propertyType}
 						</p>
 					</div>
 
-					{#if selectedProperty.amenities.length > 0}
+					{#if selectedProperty.description}
 						<div class="md:col-span-2">
-							<label for="Amenities" class="mb-2 block text-xs font-medium text-gray-700"
-								>Amenities</label
+							<label for="unit-description" class="mb-1 block text-xs font-medium text-gray-700"
+								>Description</label
 							>
-							<div class="flex flex-wrap gap-2">
-								{#each selectedProperty.amenities as amenity (amenity)}
-									<span class="rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-800">
-										{amenity}
-									</span>
+							<p class="text-sm text-gray-900">{selectedProperty.description}</p>
+						</div>
+					{/if}
+
+					{#if selectedProperty.units && selectedProperty.units.length > 0}
+						<div class="md:col-span-2">
+							<label for="units-count" class="mb-2 block text-sm font-medium text-gray-900"
+								>Units ({selectedProperty.units.length})</label
+							>
+							<span id="units-count" class="sr-only">{selectedProperty.units.length}</span>
+							<div class="space-y-3">
+								{#each selectedProperty.units as unit (unit.id)}
+									<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+										<div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+											<div>
+												<label
+													for="unit-number-{unit.id}"
+													class="mb-1 block text-xs font-medium text-gray-700">Unit Number</label
+												>
+												<input
+													id="unit-number-{unit.id}"
+													class="text-sm text-gray-900"
+													value={unit.unitNumber}
+													readonly
+												/>
+											</div>
+											<div>
+												<label
+													for="bedrooms-bathrooms-{unit.id}"
+													class="mb-1 block text-xs font-medium text-gray-700"
+													>Bedrooms/Bathrooms</label
+												>
+												<input
+													id="bedrooms-bathrooms-{unit.id}"
+													class="text-sm text-gray-900"
+													value="{unit.bedrooms}BR/{unit.bathrooms}BA"
+													readonly
+												/>
+											</div>
+											<div>
+												<label
+													for="square-feet-{unit.id}"
+													class="mb-1 block text-xs font-medium text-gray-700">Square Feet</label
+												>
+												<p id="square-feet-{unit.id}" class="text-sm text-gray-900">
+													{unit.squareFeet.toLocaleString()}
+												</p>
+											</div>
+											<div>
+												<label
+													for="monthly-rent"
+													class="mb-1 block text-xs font-medium text-gray-700">Monthly Rent</label
+												>
+												<p class="text-sm text-gray-900">{formatCurrency(unit.monthlyRent)}</p>
+											</div>
+											<div>
+												<label
+													for="security-deposit"
+													class="mb-1 block text-xs font-medium text-gray-700"
+													>Security Deposit</label
+												>
+												<p class="text-sm text-gray-900">{formatCurrency(unit.deposit)}</p>
+											</div>
+											<div>
+												<label for="status" class="mb-1 block text-xs font-medium text-gray-700"
+													>Status</label
+												>
+												<span
+													class={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
+														unit.isAvailable
+															? 'bg-green-100 text-green-800'
+															: 'bg-red-100 text-red-800'
+													}`}
+												>
+													{unit.isAvailable ? 'Available' : 'Occupied'}
+												</span>
+											</div>
+											{#if unit.description}
+												<div class="md:col-span-2">
+													<label
+														for="description"
+														class="mb-1 block text-xs font-medium text-gray-700">Description</label
+													>
+													<p id="unit-description" class="text-sm text-gray-900">
+														{unit.description}
+													</p>
+												</div>
+											{/if}
+											{#if unit.amenities && unit.amenities.length > 0}
+												<div class="md:col-span-4">
+													<label
+														for="amenities"
+														class="mb-1 block text-xs font-medium text-gray-700">Amenities</label
+													>
+													<div class="flex flex-wrap gap-1">
+														{#each unit.amenities as amenity}
+															<span class="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700">
+																{amenity}
+															</span>
+														{/each}
+													</div>
+												</div>
+											{/if}
+										</div>
+									</div>
 								{/each}
 							</div>
 						</div>
@@ -508,7 +592,7 @@
 
 					{#if selectedProperty.images && selectedProperty.images.length > 0}
 						<div class="md:col-span-2">
-							<label for="property-images" class="mb-2 block text-xs font-medium text-gray-700">
+							<label class="mb-2 block text-sm font-medium text-gray-900">
 								Property Images ({selectedProperty.images.length})
 							</label>
 
@@ -560,16 +644,8 @@
 							{/if}
 						</div>
 					{/if}
-
-					{#if selectedProperty.description}
-						<div class="md:col-span-2">
-							<label for="Description" class="mb-1 block text-xs font-medium text-gray-700"
-								>Description</label
-							>
-							<p class="text-xs text-gray-900">{selectedProperty.description}</p>
-						</div>
-					{/if}
 				</div>
+
 				<div class="border-t pt-4">
 					<div class="flex justify-between text-xs text-gray-500">
 						<span>Created: {new Date(selectedProperty.createdAt).toLocaleString()}</span>
@@ -580,7 +656,6 @@
 		{/if}
 	</Modal>
 
-	<!-- Delete Confirmation Modal -->
 	<Modal
 		isOpen={showDeleteConfirm}
 		onClose={() => {
@@ -592,8 +667,9 @@
 	>
 		<div class="p-6">
 			<p class="mb-6 text-gray-700">
-				Are you sure you want to delete the property at {selectedProperty?.address}? This action
-				cannot be undone.
+				Are you sure you want to delete the property "{selectedProperty?.name ||
+					selectedProperty?.address}"? This will also delete all associated units and lease
+				agreements. This action cannot be undone.
 			</p>
 			<div class="flex justify-end space-x-3">
 				<button

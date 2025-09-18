@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { initializeAllStores, clients, properties, leaseAgreement as leases } from '$lib/stores';
+	import { initializeAllStores, tenants, properties, leaseAgreements as leases } from '$lib/stores';
 
 	import toast from 'svelte-5-french-toast';
 	import { onMount } from 'svelte';
@@ -9,12 +9,12 @@
 	import ClientList from '../components/Clients/ClientList.svelte';
 	import PropertyList from '../components/Properties/PropertyList.svelte';
 	import LeaseList from '../components/Leases/LeaseList.svelte';
-	import type { Client, Property, LeaseAgreement } from '../types';
+	import type { Tenant, Property, LeaseAgreement } from '../types';
 
 	onMount(async () => {
 		toast.promise(
 			initializeAllStores().then((res) => {
-				if (!res.success) throw new Error(res.message); // Convert to rejection
+				if (!res.success) throw new Error(res.message);
 
 				// Update lease statuses based on end date
 				leases.update((currentLeases) => {
@@ -22,11 +22,19 @@
 					return currentLeases.map((lease) => {
 						const endDate = new Date(lease.endDate);
 						if (currentDate > endDate && lease.status === 'active') {
-							// Update property availability if lease is now expired
+							// Update unit availability if lease is now expired
 							properties.update((props) =>
-								props.map((property) =>
-									property.id === lease.propertyId ? { ...property, isAvailable: true } : property
-								)
+								props.map((property) => {
+									if (property.id === lease.propertyId && lease.unitId) {
+										return {
+											...property,
+											units: property.units.map((unit) =>
+												unit.id === lease.unitId ? { ...unit, isAvailable: true } : unit
+											)
+										};
+									}
+									return property;
+								})
 							);
 							return { ...lease, status: 'expired' };
 						}
@@ -34,7 +42,7 @@
 					});
 				});
 
-				return res.message; // Success case
+				return res.message;
 			}),
 			{
 				loading: 'Initializing stores...',
@@ -49,29 +57,48 @@
 
 	let activeTab = 'dashboard';
 
-	function handleCreateClient(client: Client) {
-		clients.update((prev) => [...prev, client]);
+	function handleCreateTenant(tenant: Tenant) {
+		tenants.update((prev) => [...prev, tenant]);
 
-		toast.success('Created Client', {
+		toast.success('Created Tenant', {
 			position: 'bottom-right'
 		});
 	}
 
-	function handleUpdateClient(updatedClient: Client) {
-		clients.update((prev) =>
-			prev.map((client) => (client.id === updatedClient.id ? updatedClient : client))
+	function handleUpdateTenant(updatedTenant: Tenant) {
+		tenants.update((prev) =>
+			prev.map((tenant) => (tenant.id === updatedTenant.id ? updatedTenant : tenant))
 		);
-		toast.success('Updated Client', {
+		toast.success('Updated Tenant', {
 			position: 'bottom-right'
 		});
 	}
 
-	function handleDeleteClient(clientId: string) {
-		clients.update((prev) => prev.filter((client) => client.id !== clientId));
-		// Also remove any leases associated with this client
-		leases.update((prev) => prev.filter((lease) => lease.clientId !== clientId));
+	function handleDeleteTenant(tenantId: string) {
+		tenants.update((prev) => prev.filter((tenant) => tenant.id !== tenantId));
+		// Also remove any leases associated with this tenant
+		leases.update((prev) => {
+			const tenantLeases = prev.filter((lease) => lease.clientId === tenantId);
 
-		toast.success('Deleted Client', {
+			// Make units available again when tenant is deleted
+			if (tenantLeases.length > 0) {
+				properties.update((props) =>
+					props.map((property) => ({
+						...property,
+						units: property.units.map((unit) => {
+							const hasLease = tenantLeases.some(
+								(lease) => lease.propertyId === property.id && lease.unitId === unit.id
+							);
+							return hasLease ? { ...unit, isAvailable: true } : unit;
+						})
+					}))
+				);
+			}
+
+			return prev.filter((lease) => lease.clientId !== tenantId);
+		});
+
+		toast.success('Deleted Tenant', {
 			position: 'bottom-right'
 		});
 	}
@@ -106,12 +133,21 @@
 
 	function handleCreateLease(lease: LeaseAgreement) {
 		leases.update((prev) => [...prev, lease]);
-		// Mark property as unavailable if lease is active
-		if (lease.status === 'active') {
+
+		// Mark specific unit as unavailable if lease is active
+		if (lease.status === 'active' && lease.unitId) {
 			properties.update((prev) =>
-				prev.map((property) =>
-					property.id === lease.propertyId ? { ...property, isAvailable: false } : property
-				)
+				prev.map((property) => {
+					if (property.id === lease.propertyId) {
+						return {
+							...property,
+							units: property.units.map((unit) =>
+								unit.id === lease.unitId ? { ...unit, isAvailable: false } : unit
+							)
+						};
+					}
+					return property;
+				})
 			);
 		}
 
@@ -125,14 +161,22 @@
 			const oldLease = prev.find((l) => l.id === updatedLease.id);
 			const updated = prev.map((lease) => (lease.id === updatedLease.id ? updatedLease : lease));
 
-			// Update property availability based on lease status changes
-			if (oldLease && oldLease.status !== updatedLease.status) {
+			// Update unit availability based on lease status changes
+			if (oldLease && updatedLease.unitId) {
 				properties.update((props) =>
 					props.map((property) => {
 						if (property.id === updatedLease.propertyId) {
 							return {
 								...property,
-								isAvailable: updatedLease.status !== 'active'
+								units: property.units.map((unit) => {
+									if (unit.id === updatedLease.unitId) {
+										return {
+											...unit,
+											isAvailable: updatedLease.status !== 'active'
+										};
+									}
+									return unit;
+								})
 							};
 						}
 						return property;
@@ -153,19 +197,27 @@
 			const lease = prev.find((l) => l.id === leaseId);
 			const updated = prev.filter((lease) => lease.id !== leaseId);
 
-			// Mark property as available when lease is deleted
-			if (lease) {
+			// Mark unit as available when lease is deleted
+			if (lease && lease.unitId) {
 				properties.update((props) =>
-					props.map((property) =>
-						property.id === lease.propertyId ? { ...property, isAvailable: true } : property
-					)
+					props.map((property) => {
+						if (property.id === lease.propertyId) {
+							return {
+								...property,
+								units: property.units.map((unit) =>
+									unit.id === lease.unitId ? { ...unit, isAvailable: true } : unit
+								)
+							};
+						}
+						return property;
+					})
 				);
 			}
 
 			return updated;
 		});
 
-		toast.success('Deleted Lease ', {
+		toast.success('Deleted Lease', {
 			position: 'bottom-right'
 		});
 	}
@@ -176,13 +228,13 @@
 
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 		{#if activeTab === 'dashboard'}
-			<Dashboard clients={$clients} properties={$properties} leases={$leases} />
+			<Dashboard tenants={$tenants} properties={$properties} leases={$leases} />
 		{:else if activeTab === 'clients'}
 			<ClientList
-				clients={$clients}
-				onCreateClient={handleCreateClient}
-				onUpdateClient={handleUpdateClient}
-				onDeleteClient={handleDeleteClient}
+				clients={$tenants}
+				onCreateClient={handleCreateTenant}
+				onUpdateClient={handleUpdateTenant}
+				onDeleteClient={handleDeleteTenant}
 			/>
 		{:else if activeTab === 'properties'}
 			<PropertyList
@@ -194,14 +246,14 @@
 		{:else if activeTab === 'leases'}
 			<LeaseList
 				leases={$leases}
-				clients={$clients}
+				tenants={$tenants}
 				properties={$properties}
 				onCreateLease={handleCreateLease}
 				onUpdateLease={handleUpdateLease}
 				onDeleteLease={handleDeleteLease}
 			/>
 		{:else}
-			<Dashboard clients={$clients} properties={$properties} leases={$leases} />
+			<Dashboard tenants={$tenants} properties={$properties} leases={$leases} />
 		{/if}
 	</main>
 </div>
