@@ -413,7 +413,9 @@
 
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 							<div>
-								<label class="mb-1 block text-xs font-medium text-gray-700">Unit Number *</label>
+								<label for="" class="mb-1 block text-xs font-medium text-gray-700"
+									>Unit Number *</label
+								>
 								<input
 									type="text"
 									bind:value={unit.unitNumber}
@@ -425,7 +427,8 @@
 							</div>
 
 							<div>
-								<label class="mb-1 block text-xs font-medium text-gray-700">Bedrooms *</label>
+								<label for="" class="mb-1 block text-xs font-medium text-gray-700">Bedrooms *</label
+								>
 								<input
 									type="number"
 									min="0"
@@ -437,7 +440,9 @@
 							</div>
 
 							<div>
-								<label class="mb-1 block text-xs font-medium text-gray-700">Bathrooms *</label>
+								<label for="" class="mb-1 block text-xs font-medium text-gray-700"
+									>Bathrooms *</label
+								>
 								<input
 									type="number"
 									min="0.5"
@@ -450,7 +455,9 @@
 							</div>
 
 							<div>
-								<label class="mb-1 block text-xs font-medium text-gray-700">Square Feet *</label>
+								<label for="" class="mb-1 block text-xs font-medium text-gray-700"
+									>Square Feet *</label
+								>
 								<input
 									type="number"
 									min="1"
@@ -462,7 +469,9 @@
 							</div>
 
 							<div>
-								<label class="mb-1 block text-xs font-medium text-gray-700">Monthly Rent *</label>
+								<label for="" class="mb-1 block text-xs font-medium text-gray-700"
+									>Monthly Rent *</label
+								>
 								<input
 									type="number"
 									min="0"
@@ -479,7 +488,7 @@
 							</div>
 
 							<div>
-								<label class="mb-1 block text-xs font-medium text-gray-700"
+								<label for="" class="mb-1 block text-xs font-medium text-gray-700"
 									>Security Deposit *</label
 								>
 								<input
@@ -494,7 +503,9 @@
 							</div>
 
 							<div class="md:col-span-3">
-								<label class="mb-1 block text-xs font-medium text-gray-700">Unit Description</label>
+								<label for="" class="mb-1 block text-xs font-medium text-gray-700"
+									>Unit Description</label
+								>
 								<textarea
 									bind:value={unit.description}
 									on:input={(e) =>
@@ -505,7 +516,9 @@
 							</div>
 
 							<div class="md:col-span-3">
-								<label class="mb-2 block text-xs font-medium text-gray-700">Unit Amenities</label>
+								<label for="" class="mb-2 block text-xs font-medium text-gray-700"
+									>Unit Amenities</label
+								>
 								<div class="grid grid-cols-2 gap-2 md:grid-cols-3">
 									{#each COMMON_AMENITIES as amenity (amenity)}
 										<label class="flex items-center space-x-2">

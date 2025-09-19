@@ -61,21 +61,9 @@
 	// Reactive statement to filter lease agreements for the selected property and enrich them with tenant data
 	$: {
 		if (selectedProperty && $leaseAgreements && $tenants) {
-			propertyLeaseAgreements = $leaseAgreements
-				.filter((agreement) => agreement.propertyId === selectedProperty?.id)
-				.map((agreement) => {
-					const tenant = $tenants.find((tenant) => tenant.id === agreement.tenantId);
-					// Find the corresponding unit for the unit ID
-					const unit = selectedProperty?.units.find((u) => u.id === agreement.unitId);
-
-					return {
-						...agreement,
-						unitNumber: unit ? unit.unitNumber : 'N/A',
-						tenantName: tenant ? `${tenant.firstName} ${tenant.lastName}` : 'N/A',
-						tenantEmail: tenant ? tenant.email : 'N/A',
-						tenantPhone: tenant ? tenant.phone : 'N/A'
-					};
-				});
+			propertyLeaseAgreements = $leaseAgreements.filter(
+				(agreement) => agreement.propertyId === selectedProperty?.id
+			);
 		} else {
 			propertyLeaseAgreements = [];
 		}
@@ -438,27 +426,27 @@
 					<div class="md:col-span-2">
 						<div class="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
 							<div>
-								<label class="block text-xs font-medium text-gray-700">Property Name</label>
+								<label for="" class="block text-xs font-medium text-gray-700">Property Name</label>
 								<p class="text-sm text-gray-900">{selectedProperty.name || 'N/A'}</p>
 							</div>
 							<div>
-								<label class="block text-xs font-medium text-gray-700">Address</label>
+								<label for="" class="block text-xs font-medium text-gray-700">Address</label>
 								<p class="text-sm text-gray-900">{selectedProperty.address}</p>
 							</div>
 							<div>
-								<label class="block text-xs font-medium text-gray-700">City</label>
+								<label for="" class="block text-xs font-medium text-gray-700">City</label>
 								<p class="text-sm text-gray-900">{selectedProperty.city}</p>
 							</div>
 							<div>
-								<label class="block text-xs font-medium text-gray-700">State</label>
+								<label for="" class="block text-xs font-medium text-gray-700">State</label>
 								<p class="text-sm text-gray-900">{selectedProperty.state}</p>
 							</div>
 							<div>
-								<label class="block text-xs font-medium text-gray-700">ZIP Code</label>
+								<label for="" class="block text-xs font-medium text-gray-700">ZIP Code</label>
 								<p class="text-sm text-gray-900">{selectedProperty.zipCode}</p>
 							</div>
 							<div>
-								<label class="block text-xs font-medium text-gray-700">Property Type</label>
+								<label for="" class="block text-xs font-medium text-gray-700">Property Type</label>
 								<p class="text-sm text-gray-900 capitalize">{selectedProperty.propertyType}</p>
 							</div>
 						</div>
@@ -466,13 +454,13 @@
 
 					{#if selectedProperty.description}
 						<div class="md:col-span-2">
-							<label class="block text-xs font-medium text-gray-700">Description</label>
+							<label for="" class="block text-xs font-medium text-gray-700">Description</label>
 							<p class="text-sm text-gray-900">{selectedProperty.description}</p>
 						</div>
 					{/if}
 
 					<div class="md:col-span-2">
-						<label class="block text-sm font-medium text-gray-900"
+						<label for="" class="block text-sm font-medium text-gray-900"
 							>Units ({selectedProperty.units.length})</label
 						>
 						{#if selectedProperty.units && selectedProperty.units.length > 0}
@@ -514,67 +502,184 @@
 						</h3>
 						{#if propertyLeaseAgreements.length > 0}
 							<div
-								class="overflow-hidden overflow-y-scroll transition-[max-height] duration-500 ease-in-out"
+								class="overflow-hidden overflow-y-auto transition-[max-height] duration-500 ease-in-out"
 								style={`max-height: ${showLeaseAgreements ? '500px' : '0px'}`}
 							>
 								<div class="space-y-4 pt-2">
 									{#each propertyLeaseAgreements as agreement (agreement.id)}
-										<div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm">
-											<div class="flex items-center justify-between">
-												<h4 class="text-base font-semibold text-gray-800">
-													Lease for Unit: {agreement.unitNumber}
-												</h4>
+										<div
+											class="rounded-xl border border-gray-300 bg-white p-6 shadow-md transition-all hover:shadow-lg"
+										>
+											<!-- Header Section -->
+											<div
+												class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-4"
+											>
+												<div>
+													<h3 class="text-lg font-bold text-gray-900">
+														Lease for Unit:
+														<!-- {agreement.unitNumber} -->
+
+														{selectedProperty?.units.find((u) => u.id === agreement.unitId)
+															?.unitNumber}
+													</h3>
+													<p class="mt-1 text-sm text-gray-500">
+														Created on {new Date(
+															agreement.createdAt || agreement.signedDate
+														).toLocaleDateString()}
+													</p>
+												</div>
 												<span
-													class="text-sm font-medium {new Date() < new Date(agreement.endDate)
-														? 'text-green-600'
-														: 'text-red-600'}"
+													class="rounded-full px-3 py-1 text-sm font-medium {new Date() <
+													new Date(agreement.endDate)
+														? 'bg-green-100 text-green-800'
+														: 'bg-red-100 text-red-800'}"
 												>
 													{agreement.status}
 												</span>
 											</div>
-											<div class="mt-2 text-sm text-gray-700">
-												<p>
-													<span class="font-medium">Tenant Name:</span>
 
-													{$tenants.find(
-														(tenant) => 'tid: ' + tenant.id + ' agr tid : ' + agreement.tenantId
-													)?.firstName}
-												</p>
-												<p>
-													<span class="font-medium">Tenant Email:</span>
-													{agreement.tenantEmail}
-												</p>
-												<p>
-													<span class="font-medium">Tenant Phone:</span>
-													{agreement.tenantPhone}
-												</p>
-												<p>
-													<span class="font-medium">Lease Dates:</span>
-													{new Date(agreement.startDate).toLocaleDateString()} - {new Date(
-														agreement.endDate
-													).toLocaleDateString()}
-												</p>
-												<p>
-													<span class="font-medium">Monthly Rent:</span>
-													{formatCurrency(agreement.monthlyRent)}
-												</p>
-												<p>
-													<span class="font-medium">Deposit:</span>
-													{formatCurrency(agreement.securityDeposit)}
-												</p>
-												<p>
-													<span class="font-medium">Terms:</span>
-													{agreement.terms}
-												</p>
-												<p>
-													<span class="font-medium">Special Conditions:</span>
-													{agreement.specialConditions}
-												</p>
-												<p>
-													<span class="font-medium">Signed Date:</span>
-													{new Date(agreement.signedDate).toLocaleDateString()}
-												</p>
+											<!-- Tenant Information -->
+											<div class="mt-5">
+												<h4 class="mb-3 flex items-center text-base font-semibold text-gray-800">
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														class="mr-2 h-5 w-5 text-blue-600"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+														/>
+													</svg>
+													Tenant Information
+												</h4>
+												<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+													<div class="space-y-2">
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700">Name:</span>
+															<span class="text-gray-800">
+																{$tenants.find((tenant) => tenant.id === agreement.tenantId)
+																	?.firstName}
+																{$tenants.find((tenant) => tenant.id === agreement.tenantId)
+																	?.lastName}
+															</span>
+														</div>
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700">Email:</span>
+															<a
+																href="mailto:{$tenants.find(
+																	(tenant) => tenant.id === agreement.tenantId
+																)?.email}"
+																class="text-blue-600 hover:underline"
+															>
+																{$tenants.find((tenant) => tenant.id === agreement.tenantId)?.email}
+															</a>
+														</div>
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700">Phone:</span>
+															<a
+																href="tel:{$tenants.find(
+																	(tenant) => tenant.id === agreement.tenantId
+																)?.phone}"
+																class="text-gray-800"
+															>
+																{$tenants.find((tenant) => tenant.id === agreement.tenantId)?.phone}
+															</a>
+														</div>
+													</div>
+												</div>
 											</div>
+
+											<!-- Lease Details -->
+											<div class="mt-6">
+												<h4 class="mb-3 flex items-center text-base font-semibold text-gray-800">
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														class="mr-2 h-5 w-5 text-blue-600"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+														/>
+													</svg>
+													Lease Details
+												</h4>
+												<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+													<div class="space-y-2">
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700">Dates:</span>
+															<span class="text-gray-800">
+																{new Date(agreement.startDate).toLocaleDateString()} - {new Date(
+																	agreement.endDate
+																).toLocaleDateString()}
+															</span>
+														</div>
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700"
+																>Monthly Rent:</span
+															>
+															<span class="text-gray-800"
+																>{formatCurrency(agreement.monthlyRent)}</span
+															>
+														</div>
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700">Deposit:</span>
+															<span class="text-gray-800"
+																>{formatCurrency(agreement.securityDeposit)}</span
+															>
+														</div>
+													</div>
+													<div class="space-y-2">
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700"
+																>Signed Date:</span
+															>
+															<span class="text-gray-800"
+																>{new Date(agreement.signedDate).toLocaleDateString()}</span
+															>
+														</div>
+														<div class="flex">
+															<span class="min-w-[120px] font-medium text-gray-700">Terms:</span>
+															<span class="text-gray-800">{agreement.terms}</span>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<!-- Special Conditions -->
+											{#if agreement.specialConditions}
+												<div class="mt-6">
+													<h4 class="mb-2 flex items-center text-base font-semibold text-gray-800">
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															class="mr-2 h-5 w-5 text-blue-600"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+														>
+															<path
+																stroke-linecap="round"
+																stroke-linejoin="round"
+																stroke-width="2"
+																d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+															/>
+														</svg>
+														Special Conditions
+													</h4>
+													<div class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+														<p class="text-gray-700">{agreement.specialConditions}</p>
+													</div>
+												</div>
+											{/if}
 										</div>
 									{/each}
 								</div>
