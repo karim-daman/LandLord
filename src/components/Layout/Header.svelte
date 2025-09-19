@@ -17,9 +17,8 @@
 
 <header class="border-b border-gray-200 bg-white shadow-sm">
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-		<div class="flex h-16 items-center justify-between">
+		<div class="flex h-16 items-center">
 			<div class="flex items-center space-x-2"></div>
-
 			<nav class="hidden space-x-1 md:flex">
 				{#each tabs as tab (tab.id)}
 					<button
@@ -37,7 +36,6 @@
 					</button>
 				{/each}
 			</nav>
-
 			<div class="md:hidden">
 				<select
 					bind:value={activeTab}
