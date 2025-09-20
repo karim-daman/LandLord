@@ -7,18 +7,7 @@
 	import type { Property, LeaseAgreement } from '../../types';
 	import { onMount } from 'svelte';
 
-	import {
-		eye,
-		edit,
-		mappin,
-		trash,
-		home,
-		dollarsign,
-		plus,
-		building2,
-		up,
-		down
-	} from '../Icons/icons';
+	import { eye, edit, mappin, trash, dollarsign, plus, units, up, down } from '../Icons/icons';
 
 	export let properties: Property[];
 	export let onCreateProperty: (property: Property) => void;
@@ -203,8 +192,45 @@
 		propertyLeaseAgreements = [];
 	}
 
+	// function getAvailableUnitsCount(property: Property): number {
+	// 	return property.units ? property.units.filter((unit) => unit.isAvailable).length : 0;
+	// }
+
 	function getAvailableUnitsCount(property: Property): number {
-		return property.units ? property.units.filter((unit) => unit.isAvailable).length : 0;
+		if (!property.units) return 0;
+
+		return property.units.filter((unit) => {
+			// Check if unit has any active leases
+			const hasActiveLease = $leaseAgreements.some(
+				(lease) =>
+					lease.unitId === unit.id &&
+					lease.status === 'active' &&
+					new Date(lease.endDate) > new Date()
+			);
+
+			// Unit is available if it's marked as available AND has no active lease
+			return unit.isAvailable && !hasActiveLease;
+		}).length;
+	}
+
+	function getUnitsWithLeaseStatus(property: Property) {
+		if (!property.units) return [];
+
+		return property.units.map((unit) => {
+			const activeLease = $leaseAgreements.find(
+				(lease) =>
+					lease.unitId === unit.id &&
+					lease.status === 'active' &&
+					new Date(lease.endDate) > new Date()
+			);
+
+			return {
+				...unit,
+				hasActiveLease: !!activeLease,
+				currentLease: activeLease,
+				actuallyAvailable: unit.isAvailable && !activeLease
+			};
+		});
 	}
 
 	function getTotalUnitsCount(property: Property): number {
@@ -315,7 +341,7 @@
 				{:else}
 					<div class="flex h-48 items-center justify-center bg-gray-200">
 						<div class="text-center text-gray-500">
-							{@html building2}
+							{@html units}
 							<div class="mt-2 text-xs">No images</div>
 						</div>
 					</div>
@@ -363,7 +389,7 @@
 							>
 						</div>
 						<div class="flex items-center text-xs text-gray-600">
-							{@html building2}<span>{getTotalUnitsCount(property)} units total</span>
+							{@html units}<span>{getTotalUnitsCount(property)} units total</span>
 						</div>
 						<div class="flex items-center text-xs font-medium text-gray-900">
 							{@html dollarsign}<span>{getPropertyRentRange(property)}/month</span>
@@ -463,25 +489,35 @@
 						<label for="" class="block text-sm font-medium text-gray-900"
 							>Units ({selectedProperty.units.length})</label
 						>
+
 						{#if selectedProperty.units && selectedProperty.units.length > 0}
 							<div class="mt-2 flex flex-wrap gap-2">
-								{#each selectedProperty.units as unit (unit.id)}
+								{#each getUnitsWithLeaseStatus(selectedProperty) as unit (unit.id)}
 									<div class="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm">
 										<span class="font-bold text-gray-700">Unit {unit.unitNumber}:</span>
-										<span class="text-gray-900"
-											>{unit.bedrooms} bed{unit.bedrooms !== 1 ? 's' : ''} / {unit.bathrooms} bath{unit.bathrooms !==
+										<span class="text-gray-900">
+											{unit.bedrooms} bed{unit.bedrooms !== 1 ? 's' : ''} / {unit.bathrooms} bath{unit.bathrooms !==
 											1
 												? 's'
-												: ''}</span
-										>
+												: ''}
+										</span>
 										<span class="ml-4 font-bold text-gray-700">Rent:</span>
 										<span class="text-gray-900">{formatCurrency(unit.monthlyRent)}</span>
 										<span class="ml-4 font-bold text-gray-700">Status:</span>
 										<span
-											class={`font-medium ${unit.isAvailable ? 'text-green-600' : 'text-red-600'}`}
+											class={`font-medium ${unit.actuallyAvailable ? 'text-green-600' : 'text-red-600'}`}
 										>
-											{unit.isAvailable ? 'Available' : 'Occupied'}
+											{unit.actuallyAvailable
+												? 'Available'
+												: unit.hasActiveLease
+													? 'Leased'
+													: 'Unavailable'}
 										</span>
+										{#if unit.hasActiveLease && unit.currentLease}
+											<span class="ml-2 text-xs text-gray-500">
+												(Until {new Date(unit.currentLease.endDate).toLocaleDateString()})
+											</span>
+										{/if}
 									</div>
 								{/each}
 							</div>

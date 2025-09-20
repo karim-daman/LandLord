@@ -1,14 +1,16 @@
 <script lang="ts">
 	import SearchFilter from '../Common/SearchFilter.svelte';
+	import { tenants } from '$lib/stores';
 	import Modal from '../Common/Modal.svelte';
 	import LeaseForm from './LeaseForm.svelte';
 	import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers';
 	import type { LeaseAgreement, Tenant, Property } from '../../types';
 	import HoverModal from '../Common/HoverModal.svelte';
 	import { calendarClock, calendar2, edit, eye, home2, plus, trash, user } from '../Icons/icons';
+	import toast from 'svelte-5-french-toast';
 
 	export let leases: LeaseAgreement[];
-	export let tenants: Tenant[];
+	export let tenantOptions: Tenant[];
 	export let properties: Property[];
 	export let onCreateLease: (lease: LeaseAgreement) => void;
 	export let onUpdateLease: (lease: LeaseAgreement) => void;
@@ -30,7 +32,7 @@
 
 	// Reactive declarations to find the tenant and property for the selected lease
 	$: selectedTenant = selectedLease
-		? tenants.find((c) => c.id === selectedLease?.tenantId)
+		? tenantOptions.find((c) => c.id === selectedLease?.tenantId)
 		: undefined;
 	$: selectedProperty = selectedLease
 		? properties.find((p) => p.id === selectedLease?.propertyId)
@@ -41,7 +43,7 @@
 	$: {
 		// Ensure leases, tenants, and properties are valid arrays before filtering
 		const validLeases = Array.isArray(leases) ? leases : [];
-		const validTenants = Array.isArray(tenants) ? tenants : [];
+		const validTenants = Array.isArray(tenantOptions) ? tenantOptions : [];
 		const validProperties = Array.isArray(properties) ? properties : [];
 
 		filteredLeases = validLeases.filter((lease) => {
@@ -263,12 +265,12 @@
 	// Helper function to get tenant name
 	function getTenantName(tenantId: string): string {
 		// Ensure `tenants` is a valid array before attempting to find an element.
-		if (!Array.isArray(tenants)) {
+		if (!Array.isArray(tenantOptions)) {
 			console.error('`tenants` prop is not an array.');
 			return 'Unknown Tenant';
 		}
 
-		const tenant = tenants.find((c) => c.id === tenantId);
+		const tenant = tenantOptions.find((c) => c.id === tenantId);
 		return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Unknown Tenant';
 	}
 
@@ -283,6 +285,19 @@
 		if (progress <= 50) return 'bg-green-600';
 		if (progress <= 75) return 'bg-green-600';
 		return 'bg-red-600';
+	}
+
+	function handleCancelLease() {
+		showForm = false;
+		selectedLease = undefined;
+	}
+
+	function handleCreateTenant(tenant: Tenant) {
+		tenants.update((prev) => [...prev, tenant]);
+
+		toast.success('Created Tenant', {
+			position: 'bottom-right'
+		});
 	}
 </script>
 
@@ -319,9 +334,9 @@
 					<div class="mb-4 flex items-start justify-between">
 						<div class="flex items-center space-x-2">
 							<span
-								class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
+								class={`rounded-full  border  px-2 py-1 text-xs font-medium ${getStatusColor(
 									getDisplayStatus(lease)
-								)}`}
+								)} `}
 							>
 								{getDisplayStatus(lease).charAt(0).toUpperCase() + getDisplayStatus(lease).slice(1)}
 							</span>
@@ -491,7 +506,7 @@
 		title={selectedLease ? 'Edit Lease Agreement' : 'Create New Lease Agreement'}
 		maxWidth="max-w-4xl"
 	>
-		<LeaseForm
+		<!-- <LeaseForm
 			lease={selectedLease}
 			{tenants}
 			{properties}
@@ -500,6 +515,16 @@
 				showForm = false;
 				selectedLease = undefined;
 			}}
+		/>
+		 -->
+
+		<LeaseForm
+			lease={selectedLease}
+			tenants={tenantOptions}
+			{properties}
+			onSave={handleSave}
+			onCancel={handleCancelLease}
+			onCreateTenant={handleCreateTenant}
 		/>
 	</Modal>
 
@@ -514,6 +539,7 @@
 	>
 		{#if selectedLease}
 			<div class="space-y-6 p-6">
+				leaseID: {selectedLease.id}
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
 						<label for="lastName" class="mb-1 block text-xs font-medium text-gray-700">Tenant</label

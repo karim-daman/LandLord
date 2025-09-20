@@ -26,7 +26,7 @@
 				lastName: tenant.lastName,
 				email: tenant.email,
 				phone: tenant.phone,
-				address: tenant.address,
+				address: 'tenant.address',
 				dateOfBirth: tenant.dateOfBirth,
 				emergencyContact: tenant.emergencyContact,
 				emergencyPhone: tenant.emergencyPhone
@@ -43,7 +43,7 @@
 		else if (!validateEmail(formData.email)) newErrors.email = 'Invalid email format';
 		if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
 		else if (!validatePhone(formData.phone)) newErrors.phone = 'Invalid phone format';
-		if (!formData.address.trim()) newErrors.address = 'Address is required';
+		// if (!formData.address.trim()) newErrors.address = 'Address is required';
 
 		errors = newErrors;
 		return Object.keys(newErrors).length === 0;
@@ -136,7 +136,7 @@
 			{#if errors.phone}<p class="mt-1 text-xs text-red-500">{errors.phone}</p>{/if}
 		</div>
 
-		<div class="md:col-span-2">
+		<!-- <div class="md:col-span-2">
 			<label for="address" class="mb-2 block text-xs font-medium text-gray-700"> Address * </label>
 			<textarea
 				id="address"
@@ -149,7 +149,7 @@
 			>
 			</textarea>
 			{#if errors.address}<p class="mt-1 text-xs text-red-500">{errors.address}</p>{/if}
-		</div>
+		</div> -->
 
 		<div>
 			<label for="dateOfBirth" class="mb-2 block text-xs font-medium text-gray-700">

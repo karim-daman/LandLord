@@ -21,7 +21,6 @@ export interface Property {
 	propertyType: 'complex' | 'house' | 'apartment' | 'commercial';
 	name?: string; // e.g., "The Grand Apartments" or "The Willow Creek Mall"
 	description: string;
-	isAvailable: boolean;
 	images: PropertyImage[];
 	createdAt: string;
 	updatedAt: string;

@@ -174,9 +174,9 @@
 							/>
 						</svg> <span>{tenant.phone}</span>
 					</div>
-					<p class="line-clamp-2 text-xs text-gray-600">
+					<!-- <p class="line-clamp-2 text-xs text-gray-600">
 						{tenant.address}
-					</p>
+					</p> -->
 				</div>
 				<div class="mt-4 border-t border-gray-100 pt-4">
 					<p class="text-xs text-gray-500">
@@ -249,11 +249,11 @@
 								: 'Not provided'}
 						</p>
 					</div>
-					<div class="md:col-span-2">
+					<!-- <div class="md:col-span-2">
 						<label for="address" class="mb-1 block text-xs font-medium text-gray-700">Address</label
 						>
 						<p class="text-xs text-gray-900">{selectedtenant.address}</p>
-					</div>
+					</div> -->
 					<div>
 						<label for="emergencyContact" class="mb-1 block text-xs font-medium text-gray-700"
 							>Emergency Contact</label

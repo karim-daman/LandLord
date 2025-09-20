@@ -24,6 +24,7 @@ export const getStatusColor = (status: string): string => {
 		case 'pending':
 			return 'bg-yellow-100 text-yellow-800 border-yellow-200';
 		case 'expired':
+			return 'bg-red-100 text-red-800 border-red-200';
 		case 'terminated':
 			return 'bg-red-100 text-red-800 border-red-200';
 		default:

@@ -246,7 +246,7 @@
 		{:else if activeTab === 'leases'}
 			<LeaseList
 				leases={$leases}
-				tenants={$tenants}
+				tenantOptions={$tenants}
 				properties={$properties}
 				onCreateLease={handleCreateLease}
 				onUpdateLease={handleUpdateLease}
