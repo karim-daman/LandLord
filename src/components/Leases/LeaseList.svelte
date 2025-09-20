@@ -225,6 +225,30 @@
 	}
 
 	function handleCreate() {
+		// Check if there are any available units (units without active leases)
+		const hasAvailableUnits = properties.some((property) => {
+			if (!property.units) return false;
+
+			return property.units.some((unit) => {
+				// Check if this unit has an active lease
+				const hasActiveLease = leases.some(
+					(lease) =>
+						lease.propertyId === property.id &&
+						lease.unitId === unit.id &&
+						lease.status === 'active'
+				);
+
+				return !hasActiveLease; // Unit is available if no active lease
+			});
+		});
+
+		if (!hasAvailableUnits) {
+			toast.error('No available units to lease.', {
+				position: 'bottom-right'
+			});
+			return; // Exit the function without opening the form
+		}
+
 		selectedLease = undefined;
 		showForm = true;
 	}
@@ -245,6 +269,27 @@
 	}
 
 	function handleSave(lease: LeaseAgreement) {
+		// Only perform this check if the new status is 'active'
+		if (lease.status === 'active') {
+			// Find if there's an existing active lease for the same property unit
+			const hasActiveLease = leases.some(
+				(existingLease) =>
+					existingLease.propertyId === lease.propertyId &&
+					existingLease.unitId === lease.unitId && // Added unitId check
+					existingLease.status === 'active' &&
+					// Exclude the currently edited lease from the check
+					existingLease.id !== lease.id
+			);
+
+			if (hasActiveLease) {
+				// Display an error message and prevent saving
+				toast.error('Cannot set to active. Another active lease exists for this unit.', {
+					position: 'bottom-right'
+				});
+				return; // Stop the function here
+			}
+		}
+
 		if (selectedLease) {
 			onUpdateLease(lease);
 		} else {
@@ -252,6 +297,16 @@
 		}
 		showForm = false;
 		selectedLease = undefined;
+	}
+
+	// Helper function to get unit number
+	function getUnitNumber(propertyId: string, unitId: string): string {
+		const property = properties.find((p) => p.id === propertyId);
+		if (property && property.units) {
+			const unit = property.units.find((u) => u.id === unitId);
+			return unit ? unit.unitNumber : 'Unknown Unit';
+		}
+		return 'Unknown Unit';
 	}
 
 	function confirmDelete() {
@@ -334,7 +389,7 @@
 					<div class="mb-4 flex items-start justify-between">
 						<div class="flex items-center space-x-2">
 							<span
-								class={`rounded-full  border  px-2 py-1 text-xs font-medium ${getStatusColor(
+								class={`rounded-full border px-2 py-1 text-xs font-medium ${getStatusColor(
 									getDisplayStatus(lease)
 								)} `}
 							>
@@ -348,6 +403,7 @@
 								</span>
 							{/if}
 						</div>
+
 						<div class="flex space-x-2 border-gray-300">
 							<button
 								on:click={() => handleView(lease)}
@@ -374,7 +430,7 @@
 					</div>
 
 					<div class="space-y-3">
-						<div class=" text-xs">
+						<div class="text-xs">
 							<div class="mb-2 flex items-center text-gray-900">
 								{@html user}
 								<span class="">
@@ -382,11 +438,21 @@
 								</span>
 							</div>
 
-							<div class="mb-2 flex items-center text-gray-600">
+							<!-- <div class="mb-2 flex items-center text-gray-600">
 								{@html home2}
-								<span class=" line-clamp-2">
+								<span class="line-clamp-2">
 									Address:
 									{getPropertyAddress(lease.propertyId)}
+								</span>
+							</div> -->
+
+							<div class="mb-2 flex items-center text-gray-600">
+								<span class="mr-2 h-4 w-4">{@html home2}</span>
+								<span class="line-clamp-2">
+									Address: {getPropertyAddress(lease.propertyId)} - Unit: {getUnitNumber(
+										lease.propertyId,
+										lease.unitId
+									)}
 								</span>
 							</div>
 
@@ -416,7 +482,7 @@
 								</span>
 							</div>
 
-							<div class=" flex justify-between text-gray-600">
+							<div class="flex justify-between text-gray-600">
 								<span class="flex" class:text-red-600={getDisplayStatus(lease) === 'Expired'}>
 									{@html calendarClock}
 									Duration: {calculateLeaseDuration(lease.startDate, lease.endDate)}
@@ -506,18 +572,6 @@
 		title={selectedLease ? 'Edit Lease Agreement' : 'Create New Lease Agreement'}
 		maxWidth="max-w-4xl"
 	>
-		<!-- <LeaseForm
-			lease={selectedLease}
-			{tenants}
-			{properties}
-			onSave={handleSave}
-			onCancel={() => {
-				showForm = false;
-				selectedLease = undefined;
-			}}
-		/>
-		 -->
-
 		<LeaseForm
 			lease={selectedLease}
 			tenants={tenantOptions}
@@ -539,7 +593,9 @@
 	>
 		{#if selectedLease}
 			<div class="space-y-6 p-6">
-				leaseID: {selectedLease.id}
+				<p class="text-xs">
+					leaseID: {selectedLease.id}
+				</p>
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
 						<label for="lastName" class="mb-1 block text-xs font-medium text-gray-700">Tenant</label
@@ -553,14 +609,22 @@
 							<p class="mt-1 text-xs text-gray-600">{selectedTenant.email}</p>
 						{/if}
 					</div>
+
 					<div>
 						<label for="Property" class="mb-1 block text-xs font-medium text-gray-700"
-							>Property</label
+							>Property unit</label
 						>
 						<p class="text-xs text-gray-900">
-							{selectedProperty ? selectedProperty.address : 'Unknown Property'}
+							{selectedProperty ? selectedProperty.address : 'Unknown Property ' + ' - '}
+							unit - {getUnitNumber(selectedLease.propertyId, selectedLease.unitId)}
 						</p>
 					</div>
+					<!-- <div>
+						<label for="unit" class="mb-1 block text-xs font-medium text-gray-700">Unit</label>
+						<p class="text-xs text-gray-900">
+							{getUnitNumber(selectedLease.propertyId, selectedLease.unitId)}
+						</p>
+					</div> -->
 					<div>
 						<label for="startDate" class="mb-1 block text-xs font-medium text-gray-700"
 							>Start Date</label

@@ -26,7 +26,7 @@ export const getStatusColor = (status: string): string => {
 		case 'expired':
 			return 'bg-red-100 text-red-800 border-red-200';
 		case 'terminated':
-			return 'bg-red-100 text-red-800 border-red-200';
+			return 'bg-red-300 text-red-800 border-red-500';
 		default:
 			return 'bg-gray-100 text-gray-800 border-gray-200';
 	}

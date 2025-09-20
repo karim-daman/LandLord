@@ -2,7 +2,7 @@
 	import SearchFilter from '../Common/SearchFilter.svelte';
 	import Modal from '../Common/Modal.svelte';
 	import PropertyForm from './PropertyForm.svelte';
-	import { formatCurrency } from '../../utils/helpers';
+	import { formatCurrency, getStatusColor } from '../../utils/helpers';
 	import { getImageAsBase64, leaseAgreements, tenants } from '$lib/stores';
 	import type { Property, LeaseAgreement } from '../../types';
 	import { onMount } from 'svelte';
@@ -564,11 +564,11 @@
 														).toLocaleDateString()}
 													</p>
 												</div>
+
 												<span
-													class="rounded-full px-3 py-1 text-sm font-medium {new Date() <
-													new Date(agreement.endDate)
-														? 'bg-green-100 text-green-800'
-														: 'bg-red-100 text-red-800'}"
+													class="rounded-full px-3 py-1 text-sm font-medium {getStatusColor(
+														agreement.status
+													)}"
 												>
 													{agreement.status}
 												</span>
