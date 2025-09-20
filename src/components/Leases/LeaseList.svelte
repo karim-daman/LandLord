@@ -438,14 +438,6 @@
 								</span>
 							</div>
 
-							<!-- <div class="mb-2 flex items-center text-gray-600">
-								{@html home2}
-								<span class="line-clamp-2">
-									Address:
-									{getPropertyAddress(lease.propertyId)}
-								</span>
-							</div> -->
-
 							<div class="mb-2 flex items-center text-gray-600">
 								<span class="mr-2 h-4 w-4">{@html home2}</span>
 								<span class="line-clamp-2">
@@ -619,12 +611,7 @@
 							unit - {getUnitNumber(selectedLease.propertyId, selectedLease.unitId)}
 						</p>
 					</div>
-					<!-- <div>
-						<label for="unit" class="mb-1 block text-xs font-medium text-gray-700">Unit</label>
-						<p class="text-xs text-gray-900">
-							{getUnitNumber(selectedLease.propertyId, selectedLease.unitId)}
-						</p>
-					</div> -->
+
 					<div>
 						<label for="startDate" class="mb-1 block text-xs font-medium text-gray-700"
 							>Start Date</label

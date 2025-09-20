@@ -29,6 +29,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@sveltejs/adapter-static": "^3.0.9",
 		"@tauri-apps/plugin-fs": "^2.4.1",
 		"@types/lodash": "^4.17.20",
 		"lodash": "^4.17.21",

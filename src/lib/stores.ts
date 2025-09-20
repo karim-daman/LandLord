@@ -8,7 +8,6 @@ import {
 	BaseDirectory,
 	exists,
 	mkdir,
-	copyFile,
 	readFile,
 	writeFile
 } from '@tauri-apps/plugin-fs';
