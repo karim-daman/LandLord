@@ -1,9 +1,8 @@
 name: 'Build and Publish'
 
 on:
-  push:
-    branches:
-      - release
+  # Allow manual triggering with version input
+  workflow_dispatch:
 
 jobs:
   build_and_publish:

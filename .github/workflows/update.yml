@@ -1,10 +1,6 @@
 name: 'Update Gist'
 
 on:
-  # Trigger when a release is published
-  release:
-    types: [published]
-
   # Allow manual triggering with version input
   workflow_dispatch:
     inputs:
