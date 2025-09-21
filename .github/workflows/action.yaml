@@ -50,9 +50,12 @@ jobs:
         with:
           node-version: lts/*
 
-      # Use a dedicated action to set up the native jq binary
-      - name: Setup jq
-        uses: shivammathur/setup-jq@v2
+      # Install jq using apt on Ubuntu (jq is pre-installed on GitHub Actions Ubuntu runners)
+      - name: Verify jq installation
+        run: |
+          which jq
+          jq --version
+        shell: bash
 
       - name: Get version
         id: version
