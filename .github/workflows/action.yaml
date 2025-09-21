@@ -44,7 +44,6 @@ jobs:
           updaterJsonKeepUniversal: true
           releaseDraft: true
           prerelease: false
-
       - name: Update Gist with Latest_Landlord.json
         env:
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
