@@ -44,7 +44,7 @@ jobs:
           releaseDraft: true
           prerelease: false
 
-      - name: Update Gist with latest.json
+      - name: Update Gist with Latest_Landlord.json
         env:
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
           GIST_ID: ${{ secrets.GIST_ID }}
@@ -68,8 +68,8 @@ jobs:
             exit 1
           fi
 
-          # Create latest.json content
-          cat > latest.json << EOF
+          # Create Latest_Landlord.json content
+          cat > Latest_Landlord.json << EOF
           {
             "version": "${{ env.PACKAGE_VERSION }}",
             "notes": "See the assets to download this version and install.",
@@ -83,11 +83,11 @@ jobs:
           }
           EOF
 
-          # Debug: Show the content of latest.json
-          echo "Content of latest.json:"
-          cat latest.json
+          # Debug: Show the content of Latest_Landlord.json
+          echo "Content of Latest_Landlord.json:"
+          cat Latest_Landlord.json
           echo "JSON validation check:"
-          if jq empty latest.json >/dev/null 2>&1; then
+          if jq empty Latest_Landlord.json >/dev/null 2>&1; then
             echo "✓ JSON is valid"
           else
             echo "✗ JSON is invalid"
@@ -111,8 +111,8 @@ jobs:
 
           # Create the JSON payload for the update
           echo "Creating update payload..."
-          UPDATE_PAYLOAD=$(jq -n --arg content "$(cat latest.json)" \
-            '{files: {"latest.json": {content: $content}}}')
+          UPDATE_PAYLOAD=$(jq -n --arg content "$(cat Latest_Landlord.json)" \
+            '{files: {"Latest_Landlord.json": {content: $content}}}')
 
           echo "Updating Gist..."
           UPDATE_RESPONSE=$(curl -s -w "\n%{http_code}" -X PATCH \
