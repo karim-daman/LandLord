@@ -58,6 +58,7 @@ export async function checkForUpdates(): Promise<UpdateCheckResult> {
 			};
 		}
 	} catch (err: any) {
+		console.log(`Failed to check for updates: ` + err);
 		// console.error('Error checking for updates:', err);
 		throw new Error(`Failed to check for updates: ${err.message}`);
 	}
