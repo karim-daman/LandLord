@@ -24,6 +24,7 @@
 		}
 	},
 	"bundle": {
+		"createUpdaterArtifacts": true,
 		"active": true,
 		"targets": "all",
 		"icon": [
@@ -33,5 +34,17 @@
 			"icons/icon.icns",
 			"icons/icon.ico"
 		]
+	},
+	"plugins": {
+		"updater": {
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkwRDU2RkY5OEE5NDE3MTEKUldRUkY1U0srVy9Wa0FKRWprVWNBbVhsaXRSejNZWHhvTHYvcXdDWUlUc21tcTBMR3RkWmhMemIK",
+			"endpoints": [
+				"https://gist.githubusercontent.com/karim-daman/13ad96d9efb2a821292c22282e87dc83/raw/7bfa269d54b55c0ccd4596030ba7dbbb020820b0/Latest_Landlord.json"
+			],
+			"dialog": true,
+			"windows": {
+				"installMode": "passive"
+			}
+		}
 	}
 }

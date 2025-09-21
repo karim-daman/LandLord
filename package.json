@@ -18,7 +18,7 @@
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/vite": "^4.0.0",
-		"@tauri-apps/cli": "^2.7.1",
+		"@tauri-apps/cli": "^2.8.4",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
@@ -31,6 +31,7 @@
 	"dependencies": {
 		"@sveltejs/adapter-static": "^3.0.9",
 		"@tauri-apps/plugin-fs": "^2.4.1",
+		"@tauri-apps/plugin-updater": "^2.9.0",
 		"@types/lodash": "^4.17.20",
 		"lodash": "^4.17.21",
 		"svelte-5-french-toast": "^2.0.6"

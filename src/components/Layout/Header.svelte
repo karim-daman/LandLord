@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { building2, chart, users, fileText } from '../Icons/icons';
 
+	import { checkForUpdates } from '../../lib/updateManager';
+	import { onMount } from 'svelte';
+
 	export let activeTab: string;
 	export let setActiveTab: (tab: string) => void = (tab) => {
 		console.warn('setActiveTab not provided, default implementation used');
@@ -13,6 +16,10 @@
 		{ id: 'properties', label: 'Properties', icon: building2 },
 		{ id: 'leases', label: 'Agreements', icon: fileText }
 	];
+
+	onMount(async () => {
+		await checkForUpdates();
+	});
 </script>
 
 <header class="border-b border-gray-200 bg-white shadow-sm">
