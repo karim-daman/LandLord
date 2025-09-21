@@ -29,36 +29,11 @@ jobs:
         run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
         shell: bash
 
-      - name: Debug Secrets
-        run: |
-          echo "TAURI_SIGNING_PRIVATE_KEY exists: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}"
-          echo "TAURI_KEY_PASSWORD exists: ${{ secrets.TAURI_KEY_PASSWORD != '' }}"
-          echo "TAURI_SIGNING_PRIVATE_KEY is: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}"
-          echo "TAURI_KEY_PASSWORD is: ${{ secrets.TAURI_KEY_PASSWORD }}"
-        shell: bash
-
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-        with:
-          tagName: v${{ env.PACKAGE_VERSION }}
-          releaseName: 'App v${{ env.PACKAGE_VERSION }}'
-          releaseBody: 'See the assets to download this version and install.'
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
-          updaterJsonKeepUniversal: true
-          releaseDraft: true
-          prerelease: false
-
-      - name: Build and release
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
           tagName: v${{ env.PACKAGE_VERSION }}
           releaseName: 'App v${{ env.PACKAGE_VERSION }}'
