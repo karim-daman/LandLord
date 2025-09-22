@@ -1,7 +1,11 @@
 name: 'Build and Publish'
 
 on:
-  workflow_dispatch:
+  # The workflow now triggers automatically when a tag like 'v1.0.0' is pushed.
+  # This is the recommended way to create official releases.
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+' # Matches tags like v1.0.0, v2.1.5, etc.
 
 jobs:
   build_and_publish:
@@ -28,7 +32,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         with:
-          releaseDraft: true
+          # Set this to false to create a public release, not a draft.
+          releaseDraft: false
           prerelease: false
           releaseBody: 'See the assets to download this version and install.'
           includeUpdaterJson: true
