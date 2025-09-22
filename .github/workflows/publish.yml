@@ -1,11 +1,7 @@
 name: 'Build and Publish'
 
 on:
-  # The workflow now triggers automatically when a tag like 'v1.0.0' is pushed.
-  # This is the recommended way to create official releases.
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+' # Matches tags like v1.0.0, v2.1.5, etc.
+  workflow_dispatch:
 
 jobs:
   build_and_publish:
