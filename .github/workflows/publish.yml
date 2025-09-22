@@ -37,6 +37,42 @@ jobs:
           echo "Tag version: ${{ steps.package-version.outputs.version }}"
           echo "Raw version: ${{ steps.package-version.outputs.raw_version }}"
 
+      - name: Verify Tauri setup
+        run: |
+          echo "=== Directory Structure ==="
+          dir
+          echo ""
+          echo "=== Checking for src-tauri directory ==="
+          if (Test-Path "src-tauri") { echo "✅ src-tauri directory exists" } else { echo "❌ src-tauri directory missing!" }
+          echo ""
+          echo "=== Checking tauri.conf.json ==="
+          if (Test-Path "src-tauri/tauri.conf.json") { 
+            echo "✅ tauri.conf.json exists"
+            echo "Content:"
+            Get-Content "src-tauri/tauri.conf.json"
+          } else { 
+            echo "❌ tauri.conf.json missing!" 
+          }
+          echo ""
+          echo "=== Tauri Info ==="
+          npm run tauri info
+        shell: pwsh
+
+      - name: Check if release already exists
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.package-version.outputs.version }}"
+          $repo = "${{ github.repository }}"
+          $headers = @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}" }
+          
+          try {
+            $response = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers $headers
+            echo "⚠️ Release $tag already exists!"
+            echo "Release URL: $($response.html_url)"
+          } catch {
+            echo "✅ Release $tag does not exist yet, proceeding..."
+          }
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -51,3 +87,15 @@ jobs:
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
           updaterJsonKeepUniversal: true
+
+      - name: Check workflow results
+        if: always()
+        shell: pwsh
+        run: |
+          echo "=== Workflow completed ==="
+          echo "Check the following:"
+          echo "1. Look at the tauri-action step output above for errors"
+          echo "2. Check your GitHub repository releases page"
+          echo "3. Verify that the GITHUB_TOKEN has proper permissions"
+          echo ""
+          echo "Expected release URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.package-version.outputs.version }}"
