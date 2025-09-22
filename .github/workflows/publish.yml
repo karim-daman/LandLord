@@ -22,13 +22,29 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
+      - name: Get package version
+        id: package-version
+        shell: pwsh
+        run: |
+          $packageJson = Get-Content "package.json" | ConvertFrom-Json
+          $version = $packageJson.version
+          echo "version=v$version" >> $env:GITHUB_OUTPUT
+          echo "raw_version=$version" >> $env:GITHUB_OUTPUT
+          echo "Package version: $version"
+
+      - name: Debug version info
+        run: |
+          echo "Tag version: ${{ steps.package-version.outputs.version }}"
+          echo "Raw version: ${{ steps.package-version.outputs.raw_version }}"
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         with:
-          # Set this to false to create a public release, not a draft.
+          tagName: ${{ steps.package-version.outputs.version }}
+          releaseName: 'Release ${{ steps.package-version.outputs.version }}'
           releaseDraft: false
           prerelease: false
           releaseBody: 'See the assets to download this version and install.'
