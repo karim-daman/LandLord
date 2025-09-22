@@ -49,7 +49,7 @@ export async function checkForUpdates(): Promise<UpdateCheckResult> {
 				updateInfo: update
 			};
 		} else {
-			console.log('No updates available');
+			console.log('No updates available ' + currentVersion);
 
 			return {
 				currentVersion,
