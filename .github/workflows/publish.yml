@@ -1,7 +1,6 @@
 name: 'Build and Publish'
 
 on:
-  # Allow manual triggering with version input
   workflow_dispatch:
 
 jobs:
@@ -23,23 +22,15 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Get version
-        id: version
-        run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
-        shell: bash
-
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }} # Pass the variable here
         with:
-          tagName: v${{ env.PACKAGE_VERSION }}
-          releaseName: 'App v${{ env.PACKAGE_VERSION }}'
+          releaseDraft: true
+          prerelease: false
           releaseBody: 'See the assets to download this version and install.'
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
           updaterJsonKeepUniversal: true
-          releaseDraft: true
-          prerelease: false
