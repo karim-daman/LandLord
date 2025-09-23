@@ -568,6 +568,7 @@
 			lease={selectedLease}
 			tenants={tenantOptions}
 			{properties}
+			{leases}
 			onSave={handleSave}
 			onCancel={handleCancelLease}
 			onCreateTenant={handleCreateTenant}

@@ -5,6 +5,7 @@
 	export let lease: LeaseAgreement | undefined;
 	export let tenants: Tenant[];
 	export let properties: Property[];
+	export let leases: LeaseAgreement[] = []; // Add leases prop to check availability
 	export let onSave: (lease: LeaseAgreement) => void;
 	export let onCancel: () => void;
 	export let onCreateTenant: ((tenant: Tenant) => void) | undefined = undefined;
@@ -68,9 +69,28 @@
 		}
 	}
 
+	// Helper function to check if a unit is available
+	function isUnitAvailable(propertyId: string, unitId: string): boolean {
+		if (!Array.isArray(leases)) return true;
+
+		// If we're editing an existing lease, the current unit should be considered available
+		const currentLeaseId = lease?.id;
+
+		const hasActiveLease = leases.some(
+			(existingLease) =>
+				existingLease.id !== currentLeaseId && // Exclude current lease when editing
+				existingLease.propertyId === propertyId &&
+				existingLease.unitId === unitId &&
+				existingLease.status === 'active'
+		);
+
+		return !hasActiveLease;
+	}
+
 	// Reactively determine selected property and available units
 	$: selectedProperty = properties.find((p) => p.id === formData.propertyId);
-	$: availableUnits = selectedProperty?.units || [];
+	$: availableUnits =
+		selectedProperty?.units?.filter((unit) => isUnitAvailable(selectedProperty.id, unit.id)) || [];
 
 	// Reset unitId if it's no longer valid for the new property
 	$: {
@@ -79,13 +99,17 @@
 		}
 	}
 
-	// Filter properties to only show those with available units.
-	// The conditional logic now checks if we are editing an existing lease.
+	// Filter properties to only show those with available units
 	$: availableProperties =
 		properties && Array.isArray(properties)
-			? properties.filter((p) => {
-					const hasAvailableUnits = p.units.some((u) => u.isAvailable);
-					const isCurrentProperty = lease && p.id === formData.propertyId;
+			? properties.filter((property) => {
+					// Check if property has any available units
+					const hasAvailableUnits =
+						property.units?.some((unit) => isUnitAvailable(property.id, unit.id)) || false;
+
+					// If we're editing an existing lease, include the current property even if no other units are available
+					const isCurrentProperty = lease && property.id === formData.propertyId;
+
 					return hasAvailableUnits || isCurrentProperty;
 				})
 			: [];
@@ -240,9 +264,10 @@
 	}
 
 	function getPropertyDisplayName(property: Property): string {
-		const availableUnitsCount = property.units.filter((u) => u.isAvailable).length;
-		const totalUnits = property.units.length;
-		return `${property.address}${property.name ? ` (${property.name})` : 'N/A'} - ${availableUnitsCount}/${totalUnits} units available`;
+		const availableUnitsCount =
+			property.units?.filter((unit) => isUnitAvailable(property.id, unit.id)).length || 0;
+		const totalUnits = property.units?.length || 0;
+		return `${property.address}${property.name ? ` (${property.name})` : ''} - ${availableUnitsCount}/${totalUnits} units available`;
 	}
 </script>
 
@@ -467,11 +492,17 @@
 				>
 					<option value="">Select a unit</option>
 					{#each availableUnits as unit (unit.id)}
-						<option value={unit.id} disabled={!unit.isAvailable && unit.id !== formData.unitId}>
+						<option value={unit.id}>
 							{getUnitDisplayName(unit)}
-							{#if !unit.isAvailable && unit.id !== formData.unitId}(Occupied){/if}
 						</option>
 					{/each}
+					{#if selectedProperty?.units && selectedProperty.units.length > availableUnits.length}
+						{#each selectedProperty.units.filter((unit) => !isUnitAvailable(selectedProperty.id, unit.id) && unit.id !== formData.unitId) as occupiedUnit (occupiedUnit.id)}
+							<option value={occupiedUnit.id} disabled>
+								{getUnitDisplayName(occupiedUnit)} (Occupied)
+							</option>
+						{/each}
+					{/if}
 				</select>
 				{#if errors.unitId}<p class="mt-1 text-xs text-red-500">{errors.unitId}</p>{/if}
 			</div>
