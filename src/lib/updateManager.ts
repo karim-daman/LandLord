@@ -1,13 +1,13 @@
 import { getVersion } from '@tauri-apps/api/app';
-import { check } from '@tauri-apps/plugin-updater';
+import { check, Update } from '@tauri-apps/plugin-updater';
 
 /**
  * Interface for update information
  */
 export interface UpdateInfo {
 	version: string;
-	date: string | undefined;
-	body: string;
+	date?: string;
+	body?: string;
 	[key: string]: any;
 }
 
@@ -18,6 +18,21 @@ export interface UpdateCheckResult {
 	currentVersion: string;
 	updateAvailable: boolean;
 	updateInfo: UpdateInfo | null;
+}
+
+/**
+ * Converts Tauri's Update object to our UpdateInfo interface
+ */
+function convertUpdateToUpdateInfo(update: Update): UpdateInfo {
+	return {
+		version: update.version,
+		date: update.date,
+		body: update.body || '',
+		// Include any additional properties from the update object
+		...Object.fromEntries(
+			Object.entries(update).filter(([key]) => !['version', 'date', 'body'].includes(key))
+		)
+	};
 }
 
 /**
@@ -40,13 +55,13 @@ export async function checkForUpdates(): Promise<UpdateCheckResult> {
 		const update = await check();
 
 		if (update) {
-			console.log(`Update found: v${update.version} (${update.date})`);
-			console.log('Release notes:', update.body);
+			console.log(`Update found: v${update.version} (${update.date || 'Unknown date'})`);
+			console.log('Release notes:', update.body || 'No release notes');
 
 			return {
 				currentVersion,
 				updateAvailable: true,
-				updateInfo: update
+				updateInfo: convertUpdateToUpdateInfo(update)
 			};
 		} else {
 			console.log('No updates available ' + currentVersion);

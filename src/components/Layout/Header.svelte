@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { building2, chart, users, fileText } from '../Icons/icons';
-	import { checkForUpdates } from '../../lib/updateManager';
-	import { onMount } from 'svelte';
 	import About from '../Common/About.svelte';
 
 	export let activeTab: string;
