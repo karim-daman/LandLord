@@ -1,7 +1,6 @@
 {
 	"$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
 	"productName": "LandLord",
-	"version": "0.1.0",
 	"identifier": "com.karim-daman.landlord",
 	"build": {
 		"frontendDist": "../build",
@@ -37,9 +36,9 @@
 	},
 	"plugins": {
 		"updater": {
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkwRDU2RkY5OEE5NDE3MTEKUldRUkY1U0srVy9Wa0FKRWprVWNBbVhsaXRSejNZWHhvTHYvcXdDWUlUc21tcTBMR3RkWmhMemIK",
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJGQzU5MzY0MEY3ODRBM0MKUldROFNuZ1BaSlBGdit4SDBGV01OK1JnZHRsWmJwYW9YNjlLQkpreURGSEN5N0xTMk1LSW44TmIK",
 			"endpoints": [
-				"https://gist.githubusercontent.com/karim-daman/13ad96d9efb2a821292c22282e87dc83/raw/7bfa269d54b55c0ccd4596030ba7dbbb020820b0/Latest_Landlord.json"
+				"https://gist.githubusercontent.com/karim-daman/13ad96d9efb2a821292c22282e87dc83/raw/bc28bf9197d10786d2d0a69d5079ce55dd13160e/latest-landlord.json"
 			],
 			"dialog": true,
 			"windows": {

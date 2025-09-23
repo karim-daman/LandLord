@@ -11,7 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check ."
+		"lint": "prettier --check .",
+		"tauri": "tauri"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",
@@ -31,6 +32,7 @@
 	"dependencies": {
 		"@sveltejs/adapter-static": "^3.0.9",
 		"@tauri-apps/plugin-fs": "^2.4.1",
+		"@tauri-apps/plugin-process": "^2.3.0",
 		"@tauri-apps/plugin-updater": "^2.9.0",
 		"@types/lodash": "^4.17.20",
 		"lodash": "^4.17.21",
