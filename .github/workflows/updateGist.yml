@@ -58,7 +58,7 @@ jobs:
           DARWIN_AARCH64_SIG=$(download_signature "App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz.sig" "darwin-aarch64" || echo "")
           DARWIN_X86_64_SIG=$(download_signature "App_${PACKAGE_VERSION}_x64.dmg.tar.gz.sig" "darwin-x86_64" || echo "")
           LINUX_X86_64_SIG=$(download_signature "app_${PACKAGE_VERSION}_amd64.deb.sig" "linux-x86_64" || echo "")
-          WINDOWS_X86_64_SIG=$(download_signature "App_${PACKAGE_VERSION}_x64_en-US.msi.sig" "windows-x86_64" || echo "")
+          WINDOWS_X86_64_SIG=$(download_signature "App_${PACKAGE_VERSION}_x64_en-US.msi.zip.sig" "windows-x86_64" || echo "")
 
           # Create the updater JSON content
           cat > latest-landlord.json << EOF
