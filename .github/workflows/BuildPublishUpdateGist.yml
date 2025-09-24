@@ -138,7 +138,7 @@ jobs:
           # Create the updater JSON content with actual signatures
           cat > latest-landlord.json << EOF
           {
-            "version": "v${PACKAGE_VERSION}",
+            "version": "${PACKAGE_VERSION}",
             "notes": "See the assets to download this version and install.",
             "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "platforms": {
