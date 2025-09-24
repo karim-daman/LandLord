@@ -148,7 +148,7 @@ jobs:
           gh release view "app-v${PACKAGE_VERSION}" --repo "${REPO}" --json assets --jq '.assets[] | select(.name | contains(".sig")) | .name' || echo "No .sig files found"
 
           # Create the updater JSON content
-          cat > latest-landlord.json << EOF
+          cat > latest.json << EOF
           {
             "version": "${PACKAGE_VERSION}",
             "notes": "See the assets to download this version and install.",
@@ -174,17 +174,17 @@ jobs:
           }
           EOF
 
-          echo "Generated latest-landlord.json content:"
-          cat latest-landlord.json
+          echo "Generated latest.json content:"
+          cat latest.json
 
           # Cleanup temporary files
           rm -rf temp_sigs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update Gist with latest-landlord.json
+      - name: Update Gist with latest.json
         env:
           GITHUB_TOKEN: ${{ secrets.GIST_TOKEN }}
         run: |
           # Update the gist using GitHub CLI
-          gh gist edit ${{ secrets.GIST_ID }} latest-landlord.json
+          gh gist edit ${{ secrets.GIST_ID }} latest.json
