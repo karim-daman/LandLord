@@ -76,11 +76,12 @@ jobs:
           args: ${{ matrix.args }}
           includeSource: false
           includeUpdaterJson: false
+
   update-gist:
     needs: publish-tauri
     runs-on: ubuntu-latest
     permissions:
-      contents: write # We need this permission to update the gist
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -92,12 +93,49 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Using version: ${VERSION}"
 
-      - name: Generate latest-landlord.json content
+      - name: Wait for release assets to be available
         shell: bash
         run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "Waiting for release assets to be fully uploaded..."
+          sleep 60
 
-          # Create the updater JSON content manually
+      - name: Download signature files and generate updater JSON
+        shell: bash
+        run: |
+          PACKAGE_VERSION="${{ needs.publish-tauri.outputs.version }}"
+          REPO="${{ github.repository }}"
+
+          echo "Processing version: ${PACKAGE_VERSION}"
+          echo "Repository: ${REPO}"
+
+          # Create temporary directory for downloads
+          mkdir -p temp_sigs
+
+          # Download signature files (these are created by Tauri automatically when signing is enabled)
+          echo "Downloading signature files..."
+
+          # Function to safely download and read signature
+          download_signature() {
+            local url="$1"
+            local output_file="$2"
+            local platform="$3"
+            
+            if curl -L -f -s "$url" -o "$output_file"; then
+              echo "✓ Downloaded signature for $platform"
+              cat "$output_file"
+            else
+              echo "⚠ Failed to download signature for $platform from $url"
+              echo ""
+            fi
+          }
+
+          # Download signatures for each platform
+          DARWIN_AARCH64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz.sig" "temp_sigs/darwin-aarch64.sig" "darwin-aarch64")
+          DARWIN_X86_64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz.sig" "temp_sigs/darwin-x86_64.sig" "darwin-x86_64")
+          LINUX_X86_64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb.sig" "temp_sigs/linux-x86_64.sig" "linux-x86_64")
+          WINDOWS_X86_64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip.sig" "temp_sigs/windows-x86_64.sig" "windows-x86_64")
+
+          # Create the updater JSON content with actual signatures
           cat > latest-landlord.json << EOF
           {
             "version": "v${PACKAGE_VERSION}",
@@ -105,20 +143,20 @@ jobs:
             "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "platforms": {
               "darwin-aarch64": {
-                "signature": "",
-                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz"
+                "signature": "${DARWIN_AARCH64_SIG}",
+                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz"
               },
               "darwin-x86_64": {
-                "signature": "",
-                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz"
+                "signature": "${DARWIN_X86_64_SIG}",
+                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz"
               },
               "linux-x86_64": {
-                "signature": "",
-                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb"
+                "signature": "${LINUX_X86_64_SIG}",
+                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb"
               },
               "windows-x86_64": {
-                "signature": "",
-                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip"
+                "signature": "${WINDOWS_X86_64_SIG}",
+                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip"
               }
             }
           }
@@ -126,6 +164,9 @@ jobs:
 
           echo "Generated latest-landlord.json content:"
           cat latest-landlord.json
+
+          # Cleanup temporary files
+          rm -rf temp_sigs
 
       - name: Update Gist with latest-landlord.json
         env:
