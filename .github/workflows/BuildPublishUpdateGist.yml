@@ -97,7 +97,7 @@ jobs:
         shell: bash
         run: |
           echo "Waiting for release assets to be fully uploaded..."
-          sleep 60
+          sleep 30
 
       - name: Download signature files and generate updater JSON
         shell: bash
