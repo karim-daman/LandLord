@@ -128,9 +128,8 @@ jobs:
           cat latest-landlord.json
 
       - name: Update Gist with latest-landlord.json
-        uses: ncr98/update-gist-with-file@v1.0.0
-        with:
-          gist-id: ${{ secrets.GIST_ID }}
-          token: ${{ secrets.GIST_TOKEN }}
-          filename: latest-landlord.json
-          file: latest-landlord.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIST_TOKEN }}
+        run: |
+          # Update the gist using GitHub CLI
+          gh gist edit ${{ secrets.GIST_ID }} latest-landlord.json
