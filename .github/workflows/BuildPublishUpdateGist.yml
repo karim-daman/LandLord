@@ -33,6 +33,7 @@ jobs:
 
       - name: Get version
         id: get-version
+        shell: bash
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -88,23 +89,27 @@ jobs:
           node-version: lts/*
 
       - name: Verify jq installation
+        shell: bash
         run: |
           which jq
           jq --version
 
       - name: Set version
+        shell: bash
         run: |
           echo "PACKAGE_VERSION=${{ needs.publish-tauri.outputs.version }}" >> $GITHUB_ENV
           echo "Using version: ${{ needs.publish-tauri.outputs.version }}"
 
       # Wait for release assets to be fully available
       - name: Wait for release availability
+        shell: bash
         run: |
           echo "Waiting for release assets to be available..."
           sleep 60
 
       # Download updater.json with robust error handling
       - name: Download updater.json
+        shell: bash
         run: |
           echo "Attempting to download updater.json for version ${{ env.PACKAGE_VERSION }}..."
           MAX_RETRIES=6
@@ -165,6 +170,7 @@ jobs:
           fi
 
       - name: Update Gist with latest-landlord.json
+        shell: bash
         env:
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
           GIST_ID: ${{ secrets.GIST_ID }}
