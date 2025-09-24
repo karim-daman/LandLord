@@ -25,70 +25,65 @@ jobs:
           PACKAGE_VERSION="${{ steps.get-version.outputs.version }}"
           REPO="${{ github.repository }}"
 
-          echo "Processing version: ${PACKAGE_VERSION}"
-          echo "Repository: ${REPO}"
+          echo "Processing version: ${PACKAGE_VERSION}" >&2
+          echo "Repository: ${REPO}" >&2
 
           # Create temporary directory for downloads
           mkdir -p temp_sigs
 
           # Function to safely download and read signature
           download_signature() {
-            local asset_name="$1"
-            local platform="$2"
-            
-            # Print status message to stderr to avoid capturing it
-            echo "Attempting to download asset: ${asset_name}" >&2
-            
-            if gh release download "app-v${PACKAGE_VERSION}" --repo "${REPO}" --pattern "${asset_name}" --dir temp_sigs 2>/dev/null; then
-              # Find the downloaded file inside the temp_sigs directory
+          local asset_name="$1"
+          local platform="$2"
+
+          echo "Attempting to download asset: ${asset_name}" >&2
+
+          if gh release download "app-v${PACKAGE_VERSION}" --repo "${REPO}" --pattern "${asset_name}" --dir temp_sigs 2>/dev/null; then
               downloaded_file=$(find temp_sigs -type f -name "${asset_name}" -print -quit)
               if [ -n "$downloaded_file" ]; then
-                # Print success message to stderr
-                echo "✓ Downloaded signature for $platform" >&2
-                # Read the content of the downloaded file and print to stdout
-                cat "$downloaded_file"
-                return 0
+              echo "✓ Downloaded signature for $platform" >&2
+              cat "$downloaded_file"
+              return 0
               fi
-            fi
-            
-            # Print failure message to stderr
-            echo "⚠ Could not find signature file: ${asset_name}" >&2
-            echo "" >&2
-            return 1
+          fi
+
+          echo "⚠ Could not find signature file: ${asset_name}" >&2
+          echo "" >&2
+          return 1
           }
 
           # Try to download signature files
           echo "Attempting to download signature files..." >&2
 
-          DARWIN_AARCH64_SIG=$(download_signature "*aarch64*.sig" "darwin-aarch64" || download_signature "*aarch64*.dmg.tar.gz.sig" "darwin-aarch64" || echo "")
-          DARWIN_X86_64_SIG=$(download_signature "*x64*.sig" "darwin-x86_64" || download_signature "*x64*.dmg.tar.gz.sig" "darwin-x86_64" || echo "")
-          LINUX_X86_64_SIG=$(download_signature "*amd64*.sig" "linux-x86_64" || download_signature "*amd64*.deb.sig" "linux-x86_64" || echo "")
-          WINDOWS_X86_64_SIG=$(download_signature "*x64*.msi.zip.sig" "windows-x86_64" || echo "")
+          DARWIN_AARCH64_SIG=$(download_signature "App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz.sig" "darwin-aarch64" || echo "")
+          DARWIN_X86_64_SIG=$(download_signature "App_${PACKAGE_VERSION}_x64.dmg.tar.gz.sig" "darwin-x86_64" || echo "")
+          LINUX_X86_64_SIG=$(download_signature "app_${PACKAGE_VERSION}_amd64.deb.sig" "linux-x86_64" || echo "")
+          WINDOWS_X86_64_SIG=$(download_signature "App_${PACKAGE_VERSION}_x64_en-US.msi.zip.sig" "windows-x86_64" || echo "")
 
           # Create the updater JSON content
           cat > latest-landlord.json << EOF
           {
-            "version": "${PACKAGE_VERSION}",
-            "notes": "See the assets to download this version and install.",
-            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "platforms": {
+          "version": "${PACKAGE_VERSION}",
+          "notes": "See the assets to download this version and install.",
+          "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "platforms": {
               "darwin-aarch64": {
-                "signature": "${DARWIN_AARCH64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz"
+              "signature": "${DARWIN_AARCH64_SIG}",
+              "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz"
               },
               "darwin-x86_64": {
-                "signature": "${DARWIN_X86_64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz"
+              "signature": "${DARWIN_X86_64_SIG}",
+              "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz"
               },
               "linux-x86_64": {
-                "signature": "${LINUX_X86_64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb"
+              "signature": "${LINUX_X86_64_SIG}",
+              "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb"
               },
               "windows-x86_64": {
-                "signature": "${WINDOWS_X86_64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip"
+              "signature": "${WINDOWS_X86_64_SIG}",
+              "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip"
               }
-            }
+          }
           }
           EOF
 
@@ -99,9 +94,3 @@ jobs:
           rm -rf temp_sigs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Gist with latest-landlord.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GIST_TOKEN }}
-        run: |
-          gh gist edit ${{ secrets.GIST_ID }} latest-landlord.json
