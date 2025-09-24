@@ -82,109 +82,24 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Get version
-        id: get-version
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Using version: ${VERSION}"
-
-      - name: Wait for release assets to be available
-        shell: bash
-        run: |
-          echo "Waiting for release assets to be fully uploaded..."
-          sleep 30
-
-      - name: List release assets and generate updater JSON
-        shell: bash
-        run: |
-          PACKAGE_VERSION="${{ needs.publish-tauri.outputs.version }}"
-          REPO="${{ github.repository }}"
-
-          echo "Processing version: ${PACKAGE_VERSION}"
-          echo "Repository: ${REPO}"
-
-          # First, let's list all assets in the release to see what's actually available
-          echo "Listing all assets in release app-v${PACKAGE_VERSION}:"
-          gh release view "app-v${PACKAGE_VERSION}" --repo "${REPO}" --json assets --jq '.assets[].name' || echo "Could not list assets"
-
-          # Create temporary directory for downloads
-          mkdir -p temp_sigs
-
-          # Function to safely download and read signature
-          download_signature() {
-            local asset_name="$1"
-            local platform="$2"
-            
-            echo "Attempting to download asset: ${asset_name}"
-            
-            if gh release download "app-v${PACKAGE_VERSION}" --repo "${REPO}" --pattern "${asset_name}" --dir temp_sigs 2>/dev/null; then
-              if [ -f "temp_sigs/${asset_name}" ]; then
-                echo "✓ Downloaded signature for $platform"
-                cat "temp_sigs/${asset_name}"
-                return 0
-              fi
-            fi
-            
-            echo "⚠ Could not find signature file: ${asset_name}"
-            echo ""
-            return 1
-          }
-
-          # Try to download signature files - these may have different naming patterns
-          echo "Attempting to download signature files..."
-
-          # Common signature file patterns that Tauri might use
-          DARWIN_AARCH64_SIG=$(download_signature "*aarch64*.sig" "darwin-aarch64" || download_signature "*aarch64*.dmg.tar.gz.sig" "darwin-aarch64" || echo "")
-          DARWIN_X86_64_SIG=$(download_signature "*x64*.sig" "darwin-x86_64" || download_signature "*x64*.dmg.tar.gz.sig" "darwin-x86_64" || echo "")
-          LINUX_X86_64_SIG=$(download_signature "*amd64*.sig" "linux-x86_64" || download_signature "*amd64*.deb.sig" "linux-x86_64" || echo "")
-          WINDOWS_X86_64_SIG=$(download_signature "*x64*.msi*.sig" "windows-x86_64" || download_signature "*x64*.msi.zip.sig" "windows-x86_64" || echo "")
-
-          # If no signatures found, let's see what .sig files actually exist
-          echo "Looking for any .sig files in the release:"
-          gh release view "app-v${PACKAGE_VERSION}" --repo "${REPO}" --json assets --jq '.assets[] | select(.name | contains(".sig")) | .name' || echo "No .sig files found"
-
-          # Create the updater JSON content
-          cat > latest.json << EOF
-          {
-            "version": "${PACKAGE_VERSION}",
-            "notes": "See the assets to download this version and install.",
-            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "platforms": {
-              "darwin-aarch64": {
-                "signature": "${DARWIN_AARCH64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz"
-              },
-              "darwin-x86_64": {
-                "signature": "${DARWIN_X86_64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz"
-              },
-              "linux-x86_64": {
-                "signature": "${LINUX_X86_64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb"
-              },
-              "windows-x86_64": {
-                "signature": "${WINDOWS_X86_64_SIG}",
-                "url": "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip"
-              }
-            }
-          }
-          EOF
-
-          echo "Generated latest.json content:"
-          cat latest.json
-
-          # Cleanup temporary files
-          rm -rf temp_sigs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download latest.json from release
+        uses: robinraju/release-downloader@v1.9
+        with:
+          repository: ${{ github.repository }}
+          tag: 'app-v${{ needs.publish-tauri.outputs.version }}'
+          fileName: 'latest.json'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          extract: false
+          # This will download the file to the current working directory, which is the root of the runner's workspace.
 
       - name: Update Gist with latest.json
         env:
           GITHUB_TOKEN: ${{ secrets.GIST_TOKEN }}
         run: |
+          # Check if the latest.json file was downloaded successfully
+          if [ ! -f "latest.json" ]; then
+            echo "Error: latest.json file not found in the release assets. Gist update skipped."
+            exit 1
+          fi
           # Update the gist using GitHub CLI
           gh gist edit ${{ secrets.GIST_ID }} latest.json
