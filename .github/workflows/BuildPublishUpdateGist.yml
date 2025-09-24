@@ -75,291 +75,62 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
           includeSource: false
-
+          includeUpdaterJson: false
   update-gist:
     needs: publish-tauri
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # We need this permission to update the gist
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
-      - name: Verify jq installation
+      - name: Get version
+        id: get-version
         shell: bash
         run: |
-          which jq
-          jq --version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Using version: ${VERSION}"
 
-      - name: Set version
+      - name: Generate latest-landlord.json content
         shell: bash
         run: |
-          echo "PACKAGE_VERSION=${{ needs.publish-tauri.outputs.version }}" >> $GITHUB_ENV
-          echo "Using version: ${{ needs.publish-tauri.outputs.version }}"
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
-      # Wait for release assets to be fully available
-      - name: Wait for release availability
-        shell: bash
-        run: |
-          echo "Waiting for release assets to be available..."
-          sleep 60
+          # Create the updater JSON content manually
+          cat > latest-landlord.json << EOF
+          {
+            "version": "v${PACKAGE_VERSION}",
+            "notes": "See the assets to download this version and install.",
+            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "platforms": {
+              "darwin-aarch64": {
+                "signature": "",
+                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz"
+              },
+              "darwin-x86_64": {
+                "signature": "",
+                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz"
+              },
+              "linux-x86_64": {
+                "signature": "",
+                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb"
+              },
+              "windows-x86_64": {
+                "signature": "",
+                "url": "https://github.com/${{ github.repository }}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip"
+              }
+            }
+          }
+          EOF
 
-      # Download updater.json with robust error handling
-      - name: Download updater.json
-        shell: bash
-        run: |
-          echo "Attempting to download updater.json for version ${{ env.PACKAGE_VERSION }}..."
-          MAX_RETRIES=6
-          RETRY_COUNT=0
-
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            echo "Download attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES"
-            
-            # Try to download the file
-            HTTP_CODE=$(curl -sS -L -o updater.json -w "%{http_code}" \
-               "https://github.com/${{ github.repository }}/releases/download/app-v${{ env.PACKAGE_VERSION }}/latest.json")
-            
-            echo "HTTP response code: $HTTP_CODE"
-            
-            if [ "$HTTP_CODE" = "200" ]; then
-              # Check if file exists and has content
-              if [ -f "updater.json" ] && [ -s "updater.json" ]; then
-                echo "File downloaded successfully"
-                echo "File size: $(wc -c < updater.json) bytes"
-                echo "First 200 characters:"
-                head -c 200 updater.json
-                echo ""
-                
-                # Validate JSON
-                if jq empty updater.json >/dev/null 2>&1; then
-                  echo "✓ Downloaded file is valid JSON"
-                  echo "JSON structure preview:"
-                  jq '.' updater.json | head -20
-                  break
-                else
-                  echo "✗ Downloaded file is not valid JSON"
-                  echo "Full file content:"
-                  cat updater.json
-                fi
-              else
-                echo "✗ Downloaded file is empty or doesn't exist"
-              fi
-            else
-              echo "✗ Download failed with HTTP code: $HTTP_CODE"
-              if [ -f "updater.json" ]; then
-                echo "Response content:"
-                cat updater.json
-              fi
-            fi
-            
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-              WAIT_TIME=$((RETRY_COUNT * 15))
-              echo "Waiting ${WAIT_TIME} seconds before retry..."
-              sleep $WAIT_TIME
-            fi
-          done
-
-          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-            echo "Failed to download valid updater.json after $MAX_RETRIES attempts"
-            echo "Please check if the release app-v${{ env.PACKAGE_VERSION }} exists and has the latest.json asset"
-            exit 1
-          fi
+          echo "Generated latest-landlord.json content:"
+          cat latest-landlord.json
 
       - name: Update Gist with latest-landlord.json
-        shell: bash
-        env:
-          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
-          GIST_ID: ${{ secrets.GIST_ID }}
-        run: |
-          echo "Starting Gist update process..."
-
-          # Debug info
-          echo "PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}"
-          echo "Repository: ${{ github.repository }}"
-          echo "GIST_ID exists: ${{ secrets.GIST_ID != '' }}"
-          echo "GIST_TOKEN exists: ${{ secrets.GIST_TOKEN != '' }}"
-
-          # Validate required secrets
-          if [ -z "$GIST_ID" ]; then
-            echo "❌ Error: GIST_ID is not set. Please add it to your repository secrets."
-            exit 1
-          fi
-
-          if [ -z "$GIST_TOKEN" ]; then
-            echo "❌ Error: GIST_TOKEN is not set. Please add it to your repository secrets."
-            exit 1
-          fi
-
-          # Validate updater.json exists
-          if [ ! -f "updater.json" ]; then
-            echo "❌ Error: updater.json file not found"
-            exit 1
-          fi
-
-          echo "📄 Content of downloaded updater.json:"
-          cat updater.json | jq '.'
-          echo ""
-
-          # Extract signatures for all platforms
-          echo "🔍 Extracting signatures from updater.json..."
-
-          # Check available platforms
-          echo "Available platforms:"
-          jq -r '.platforms | keys[]?' updater.json 2>/dev/null || echo "No platforms found"
-
-          # Initialize variables for each platform
-          LINUX_SIGNATURE=""
-          WINDOWS_SIGNATURE=""
-          DARWIN_X64_SIGNATURE=""
-          DARWIN_ARM64_SIGNATURE=""
-
-          # Platform mapping for common names
-          declare -A PLATFORM_MAP=(
-            ["linux-x86_64"]="LINUX"
-            ["windows-x86_64"]="WINDOWS" 
-            ["darwin-x86_64"]="DARWIN_X64"
-            ["darwin-aarch64"]="DARWIN_ARM64"
-          )
-
-          # Extract signatures for each platform
-          for platform in $(jq -r '.platforms | keys[]' updater.json 2>/dev/null); do
-            signature=$(jq -r ".platforms.\"$platform\".signature" updater.json 2>/dev/null)
-            echo "Platform: $platform, Signature: ${signature:0:20}..."
-            
-            case "$platform" in
-              "linux-x86_64")
-                LINUX_SIGNATURE="$signature"
-                ;;
-              "windows-x86_64")
-                WINDOWS_SIGNATURE="$signature"
-                ;;
-              "darwin-x86_64")
-                DARWIN_X64_SIGNATURE="$signature"
-                ;;
-              "darwin-aarch64")
-                DARWIN_ARM64_SIGNATURE="$signature"
-                ;;
-            esac
-          done
-
-          # Use x86_64 Darwin signature for both if ARM64 not available (fallback)
-          if [ -z "$DARWIN_ARM64_SIGNATURE" ] && [ -n "$DARWIN_X64_SIGNATURE" ]; then
-            echo "⚠️  Using x86_64 Darwin signature for ARM64 (universal binary)"
-            DARWIN_ARM64_SIGNATURE="$DARWIN_X64_SIGNATURE"
-          fi
-
-          echo "✅ Signatures extracted:"
-          echo "  Linux: ${LINUX_SIGNATURE:+✓} ${LINUX_SIGNATURE:0:20}..."
-          echo "  Windows: ${WINDOWS_SIGNATURE:+✓} ${WINDOWS_SIGNATURE:0:20}..."
-          echo "  Darwin x64: ${DARWIN_X64_SIGNATURE:+✓} ${DARWIN_X64_SIGNATURE:0:20}..."
-          echo "  Darwin ARM64: ${DARWIN_ARM64_SIGNATURE:+✓} ${DARWIN_ARM64_SIGNATURE:0:20}..."
-
-          # Create latest-landlord.json content with all platforms
-          echo "📝 Creating latest-landlord.json..."
-
-          # Generate the JSON structure
-          jq -n \
-            --arg version "${{ env.PACKAGE_VERSION }}" \
-            --arg notes "See the assets to download this version and install." \
-            --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg linux_sig "$LINUX_SIGNATURE" \
-            --arg linux_url "https://github.com/${{ github.repository }}/releases/download/app-v${{ env.PACKAGE_VERSION }}/LandLord_${{ env.PACKAGE_VERSION }}_amd64.AppImage" \
-            --arg windows_sig "$WINDOWS_SIGNATURE" \
-            --arg windows_url "https://github.com/${{ github.repository }}/releases/download/app-v${{ env.PACKAGE_VERSION }}/LandLord_${{ env.PACKAGE_VERSION }}_x64-setup.exe" \
-            --arg darwin_x64_sig "$DARWIN_X64_SIGNATURE" \
-            --arg darwin_x64_url "https://github.com/${{ github.repository }}/releases/download/app-v${{ env.PACKAGE_VERSION }}/LandLord_${{ env.PACKAGE_VERSION }}_x64.dmg" \
-            --arg darwin_arm64_sig "$DARWIN_ARM64_SIGNATURE" \
-            --arg darwin_arm64_url "https://github.com/${{ github.repository }}/releases/download/app-v${{ env.PACKAGE_VERSION }}/LandLord_${{ env.PACKAGE_VERSION }}_aarch64.dmg" \
-            '{
-              version: $version,
-              notes: $notes,
-              pub_date: $pub_date,
-              platforms: {
-                "linux-x86_64": {
-                  signature: $linux_sig,
-                  url: $linux_url
-                },
-                "windows-x86_64": {
-                  signature: $windows_sig,
-                  url: $windows_url
-                },
-                "darwin-x86_64": {
-                  signature: $darwin_x64_sig,
-                  url: $darwin_x64_url
-                },
-                "darwin-aarch64": {
-                  signature: $darwin_arm64_sig,
-                  url: $darwin_arm64_url
-                }
-              }
-            }' > latest-landlord.json
-
-          # Validate the created JSON
-          echo "✅ Validating latest-landlord.json..."
-          if jq empty latest-landlord.json >/dev/null 2>&1; then
-            echo "✅ latest-landlord.json is valid JSON"
-            echo "📄 Content preview:"
-            jq '.' latest-landlord.json
-          else
-            echo "❌ latest-landlord.json is invalid JSON"
-            echo "Content:"
-            cat latest-landlord.json
-            exit 1
-          fi
-
-          # Test Gist API access
-          echo "🔐 Testing Gist API access..."
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${GIST_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/gists/${GIST_ID}")
-
-          echo "Gist API response code: $HTTP_CODE"
-
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "❌ Unable to access Gist (HTTP $HTTP_CODE)"
-            echo "Please check your GIST_TOKEN permissions and GIST_ID validity"
-            exit 1
-          fi
-
-          echo "✅ Gist API access confirmed"
-
-          # Create the JSON payload for the update
-          echo "📦 Creating update payload..."
-          UPDATE_PAYLOAD=$(jq -n --arg content "$(cat latest-landlord.json)" \
-            '{files: {"latest-landlord.json": {content: $content}}}')
-
-          echo "🚀 Updating Gist..."
-          UPDATE_RESPONSE=$(curl -s -w "\n%{http_code}" -X PATCH \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GIST_TOKEN}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/gists/${GIST_ID}" \
-            -d "${UPDATE_PAYLOAD}")
-
-          HTTP_STATUS=$(echo "$UPDATE_RESPONSE" | tail -n1)
-          RESPONSE_BODY=$(echo "$UPDATE_RESPONSE" | sed '$d')
-
-          echo "HTTP Status: $HTTP_STATUS"
-
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "❌ Failed to update Gist"
-            echo "Response body:"
-            echo "$RESPONSE_BODY" | jq '.' 2>/dev/null || echo "$RESPONSE_BODY"
-            exit 1
-          else
-            echo "🎉 Gist updated successfully!"
-            echo "🔗 Updated Gist URL: https://gist.github.com/${GIST_ID}"
-            echo "📊 Updated content summary:"
-            echo "  - Version: ${{ env.PACKAGE_VERSION }}"
-            echo "  - Platforms: linux-x86_64, windows-x86_64, darwin-x86_64, darwin-aarch64"
-            echo "  - Linux AppImage: ${LINUX_SIGNATURE:+✓}"
-            echo "  - Windows Setup: ${WINDOWS_SIGNATURE:+✓}"
-            echo "  - macOS x64 DMG: ${DARWIN_X64_SIGNATURE:+✓}"
-            echo "  - macOS ARM64 DMG: ${DARWIN_ARM64_SIGNATURE:+✓}"
-          fi
+        uses: ncr98/update-gist-with-file@v1.0.0
+        with:
+          gist-id: ${{ secrets.GIST_ID }}
+          token: ${{ secrets.GIST_TOKEN }}
+          filename: latest-landlord.json
+          file: latest-landlord.json
