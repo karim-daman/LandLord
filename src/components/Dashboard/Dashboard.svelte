@@ -12,10 +12,27 @@
 		? leases.filter((lease) => lease.status === 'active')
 		: [];
 
-	$: availableUnits = Array.isArray(properties)
+	// Fixed calculation: determine availability based on active leases, not unit.isAvailable
+	$: availableUnits = properties
 		? properties.reduce((count, property) => {
+				if (!property.units) return count;
+
 				return (
-					count + (property.units ? property.units.filter((unit) => unit.isAvailable).length : 0)
+					count +
+					property.units.filter((unit) => {
+						// Check if this unit has an active lease
+						const hasActiveLease = Array.isArray(leases)
+							? leases.some(
+									(lease) =>
+										lease.propertyId === property.id &&
+										lease.unitId === unit.id &&
+										lease.status === 'active'
+								)
+							: false;
+
+						// Unit is available if it doesn't have an active lease
+						return !hasActiveLease;
+					}).length
 				);
 			}, 0)
 		: 0;
@@ -32,19 +49,34 @@
 		? activeLeases.reduce((total, lease) => total + lease.monthlyRent, 0)
 		: 0;
 
+	// Fixed: Check if lease expires within 30 days and is currently active
 	$: expiringLeases = Array.isArray(leases)
 		? leases.filter((lease) => {
+				if (lease.status !== 'active') return false;
+
 				const endDate = new Date(lease.endDate);
+				const today = new Date();
 				const thirtyDaysFromNow = new Date();
-				thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-				return endDate <= thirtyDaysFromNow && lease.status === 'active';
+				thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+				return endDate <= thirtyDaysFromNow && endDate > today;
 			})
 		: [];
 
+	// Fixed: Only count leases that have actually expired (past end date) and have expired status
 	$: expiredLeases = Array.isArray(leases)
 		? leases.filter((lease) => {
 				const endDate = new Date(lease.endDate);
-				return endDate.getTime() < Date.now() && lease.status === 'expired';
+				const today = new Date();
+				today.setHours(0, 0, 0, 0);
+				endDate.setHours(0, 0, 0, 0);
+
+				// Count leases that are past their end date OR have expired/terminated status
+				return (
+					endDate.getTime() < today.getTime() ||
+					lease.status === 'expired' ||
+					lease.status === 'terminated'
+				);
 			})
 		: [];
 

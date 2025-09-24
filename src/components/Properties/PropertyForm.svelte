@@ -36,14 +36,15 @@
 		name: '',
 		description: '',
 		images: [] as PropertyImage[],
-		isAvailable: true,
 		units: [] as Unit[]
 	};
 
 	let errors: Partial<Record<keyof typeof formData | 'units', string>> = {};
 	let uploadingImages = false;
 	let imageUploadError = '';
-	let showUnits = false;
+
+	// Computed property to check if property has available units
+	$: hasAvailableUnits = formData.units.some((unit) => unit.isAvailable);
 
 	$: {
 		if (property) {
@@ -56,7 +57,6 @@
 				name: property.name || '',
 				description: property.description,
 				images: property.images || [],
-				isAvailable: property.isAvailable,
 				units: property.units || []
 			};
 		}
@@ -372,6 +372,27 @@
 				</div>
 			{/if}
 		</div>
+
+		<!-- Property Availability Status -->
+		{#if formData.units.length > 0}
+			<div class="md:col-span-2">
+				<div class="rounded-lg border border-gray-200 bg-gray-50 p-3">
+					<div class="flex items-center space-x-2">
+						<div
+							class={`h-3 w-3 rounded-full ${hasAvailableUnits ? 'bg-green-500' : 'bg-red-500'}`}
+						></div>
+						<span class="text-sm font-medium text-gray-700">
+							Property Status: {hasAvailableUnits ? 'Available' : 'No Available Units'}
+						</span>
+					</div>
+					<p class="mt-1 text-xs text-gray-600">
+						{hasAvailableUnits
+							? `${formData.units.filter((u) => u.isAvailable).length} of ${formData.units.length} units available`
+							: 'All units are currently occupied'}
+					</p>
+				</div>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Units Section -->
@@ -401,7 +422,21 @@
 				{#each formData.units as unit, index (unit.id)}
 					<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
 						<div class="mb-3 flex items-center justify-between">
-							<h4 class="font-medium text-gray-900">Unit {index + 1}</h4>
+							<div class="flex items-center space-x-3">
+								<h4 class="font-medium text-gray-900">Unit {index + 1}</h4>
+								<div
+									class={`flex items-center space-x-1 rounded-full px-2 py-1 text-xs ${
+										unit.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+									}`}
+								>
+									<div
+										class={`h-2 w-2 rounded-full ${
+											unit.isAvailable ? 'bg-green-500' : 'bg-red-500'
+										}`}
+									></div>
+									<span>{unit.isAvailable ? 'Available' : 'Occupied'}</span>
+								</div>
+							</div>
 							<button
 								type="button"
 								on:click={() => removeUnit(unit.id)}

@@ -56,7 +56,7 @@ export interface LeaseAgreement {
 	id: string;
 	tenantId: string;
 	propertyId: string;
-	unitId?: string;
+	unitId: string;
 	startDate: string;
 	endDate: string;
 	monthlyRent: number;
