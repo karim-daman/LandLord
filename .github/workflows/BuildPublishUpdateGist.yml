@@ -75,7 +75,6 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
           includeSource: false
-          includeUpdaterJson: false
 
   update-gist:
     needs: publish-tauri
