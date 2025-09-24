@@ -39,9 +39,12 @@ jobs:
             echo "Attempting to download asset: ${asset_name}"
             
             if gh release download "app-v${PACKAGE_VERSION}" --repo "${REPO}" --pattern "${asset_name}" --dir temp_sigs 2>/dev/null; then
-              if [ -f "temp_sigs/${asset_name}" ]; then
+              # Check if the downloaded file exists inside the temp_sigs directory
+              downloaded_file=$(find temp_sigs -type f -name "${asset_name}" -print -quit)
+              if [ -n "$downloaded_file" ]; then
                 echo "✓ Downloaded signature for $platform"
-                cat "temp_sigs/${asset_name}"
+                # Read the content of the downloaded file
+                cat "$downloaded_file"
                 return 0
               fi
             fi
