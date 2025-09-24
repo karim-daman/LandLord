@@ -99,7 +99,7 @@ jobs:
           echo "Waiting for release assets to be fully uploaded..."
           sleep 30
 
-      - name: Download signature files and generate updater JSON
+      - name: List release assets and generate updater JSON
         shell: bash
         run: |
           PACKAGE_VERSION="${{ needs.publish-tauri.outputs.version }}"
@@ -108,34 +108,47 @@ jobs:
           echo "Processing version: ${PACKAGE_VERSION}"
           echo "Repository: ${REPO}"
 
+          # First, let's list all assets in the release to see what's actually available
+          echo "Listing all assets in release app-v${PACKAGE_VERSION}:"
+          gh release view "app-v${PACKAGE_VERSION}" --repo "${REPO}" --json assets --jq '.assets[].name' || echo "Could not list assets"
+
           # Create temporary directory for downloads
           mkdir -p temp_sigs
 
-          # Download signature files (these are created by Tauri automatically when signing is enabled)
-          echo "Downloading signature files..."
-
           # Function to safely download and read signature
           download_signature() {
-            local url="$1"
-            local output_file="$2"
-            local platform="$3"
+            local asset_name="$1"
+            local platform="$2"
             
-            if curl -L -f -s "$url" -o "$output_file"; then
-              echo "✓ Downloaded signature for $platform"
-              cat "$output_file"
-            else
-              echo "⚠ Failed to download signature for $platform from $url"
-              echo ""
+            echo "Attempting to download asset: ${asset_name}"
+            
+            if gh release download "app-v${PACKAGE_VERSION}" --repo "${REPO}" --pattern "${asset_name}" --dir temp_sigs 2>/dev/null; then
+              if [ -f "temp_sigs/${asset_name}" ]; then
+                echo "✓ Downloaded signature for $platform"
+                cat "temp_sigs/${asset_name}"
+                return 0
+              fi
             fi
+            
+            echo "⚠ Could not find signature file: ${asset_name}"
+            echo ""
+            return 1
           }
 
-          # Download signatures for each platform
-          DARWIN_AARCH64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_aarch64.dmg.tar.gz.sig" "temp_sigs/darwin-aarch64.sig" "darwin-aarch64")
-          DARWIN_X86_64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64.dmg.tar.gz.sig" "temp_sigs/darwin-x86_64.sig" "darwin-x86_64")
-          LINUX_X86_64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/app_${PACKAGE_VERSION}_amd64.deb.sig" "temp_sigs/linux-x86_64.sig" "linux-x86_64")
-          WINDOWS_X86_64_SIG=$(download_signature "https://github.com/${REPO}/releases/download/app-v${PACKAGE_VERSION}/App_${PACKAGE_VERSION}_x64_en-US.msi.zip.sig" "temp_sigs/windows-x86_64.sig" "windows-x86_64")
+          # Try to download signature files - these may have different naming patterns
+          echo "Attempting to download signature files..."
 
-          # Create the updater JSON content with actual signatures
+          # Common signature file patterns that Tauri might use
+          DARWIN_AARCH64_SIG=$(download_signature "*aarch64*.sig" "darwin-aarch64" || download_signature "*aarch64*.dmg.tar.gz.sig" "darwin-aarch64" || echo "")
+          DARWIN_X86_64_SIG=$(download_signature "*x64*.sig" "darwin-x86_64" || download_signature "*x64*.dmg.tar.gz.sig" "darwin-x86_64" || echo "")
+          LINUX_X86_64_SIG=$(download_signature "*amd64*.sig" "linux-x86_64" || download_signature "*amd64*.deb.sig" "linux-x86_64" || echo "")
+          WINDOWS_X86_64_SIG=$(download_signature "*x64*.msi*.sig" "windows-x86_64" || download_signature "*x64*.msi.zip.sig" "windows-x86_64" || echo "")
+
+          # If no signatures found, let's see what .sig files actually exist
+          echo "Looking for any .sig files in the release:"
+          gh release view "app-v${PACKAGE_VERSION}" --repo "${REPO}" --json assets --jq '.assets[] | select(.name | contains(".sig")) | .name' || echo "No .sig files found"
+
+          # Create the updater JSON content
           cat > latest-landlord.json << EOF
           {
             "version": "${PACKAGE_VERSION}",
@@ -167,6 +180,8 @@ jobs:
 
           # Cleanup temporary files
           rm -rf temp_sigs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Gist with latest-landlord.json
         env:
