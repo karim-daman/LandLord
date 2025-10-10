@@ -200,7 +200,7 @@
 			showForm = false;
 			selectedtenant = undefined;
 		}}
-		title={selectedtenant ? 'Edit tenant' : 'Create New tenant'}
+		title={selectedtenant ? 'Edit tenant' : 'Create New Tenant'}
 	>
 		<TenantForm
 			tenant={selectedtenant}
@@ -219,7 +219,7 @@
 			showDetails = false;
 			selectedtenant = undefined;
 		}}
-		title="tenant Details"
+		title="Tenant Details"
 	>
 		{#if selectedtenant}
 			<div class="space-y-6 p-6">
